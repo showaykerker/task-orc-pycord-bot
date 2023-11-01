@@ -1,7 +1,4 @@
-import inspect
-import random
-from itertools import cycle
-
+from discord import ApplicationContext
 from ezcord.internal.dc import discord as dc
 from ezcord import Bot, Cog
 
