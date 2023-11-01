@@ -1,0 +1,25 @@
+{
+  "times": {
+    "min": "分",
+    "sec": "秒",
+    "hour": "小時",
+    "day": "天"
+  },
+  "bot": {
+    "error_title": "Error",
+    "error": "The following error occurred: {}",
+    "cooldown_title": "Cooldown",
+    "cooldown": "Try again {}.",
+    "no_perms_title": "Missing permissions",
+    "no_perms": "I'm missing the following permissions to execute this command."
+  },
+  "help": {
+    "cmd_name": "help",
+    "cmd_description": "顯示所有指令",
+    "wrong_user": "This help command does not belong to you!",
+    "placeholder": "\uD83D\uDD30 › 選擇分類",
+    "embed_title": "My commands",
+    "default_description": "All commands of category **{}**.",
+    "no_commands": "Oops, I couldn't find any commands that you have access to."
+  }
+}
