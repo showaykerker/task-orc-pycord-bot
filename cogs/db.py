@@ -13,10 +13,18 @@ from table2ascii import PresetStyle
 def df_to_ascii_table(df:df) -> str:
     fields = ["name", "discord_id", "trello_id"]
     body = [[df[f][i] for f in fields] for i in df.index]
+
+    # Trim name length
+    max_length = 10
+    for i, mem in enumerate(body):
+        if len(mem[0]) > max_length:
+            body[i][0] = mem[0][:max_length-2] + ".."
+
     table = t2a(
         header = fields,
         body = body,
-        style = PresetStyle.thin_compact
+        style = PresetStyle.thick_compact,
+        cell_padding=0
     )
     return f"```\n{table}\n```"
 
