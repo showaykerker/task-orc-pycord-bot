@@ -65,12 +65,18 @@ class TaskOrcDB(DBHandler):
                     f"trello_id \033[3m'{trello_id}'\033[1;31m. "\
                     "Skip.\033[0m\n")
 
-    async def get_member_data(self) -> pd.DataFrame:
+    async def get_member_data(self, guild_id:Optional[str]="") -> pd.DataFrame:
         """Retrieve all member data as a Pandas DataFrame."""
         async with self.start() as db:
-            rows = await db.exec("SELECT * FROM Member")
+            if guild_id:
+                rows = await db.exec("SELECT * FROM Member WHERE guild_id = ?",
+                    guild_id
+                )
+            else:
+                rows = await db.exec("SELECT * FROM Member")
             rows = await rows.fetchall()
-            return pd.DataFrame(rows)
+            return pd.DataFrame(
+                rows, columns=["id", "guild_id", "name", "discord_id", "trello_id"])
 
 
 async def test():
