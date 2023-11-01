@@ -4,6 +4,7 @@ import random
 from itertools import cycle
 
 from discord import ApplicationContext
+from discord import Option
 from ezcord.internal.dc import discord as dc
 from ezcord import Bot, Cog
 from pandas import DataFrame as df
@@ -33,15 +34,22 @@ class Database(Cog):
         super().__init__(bot)
 
     @dc.slash_command(
-        name="get_members", description="Get member data from database."
+        name="get", description="Get data from the database"
+    )
+    async def get(self, ctx: ApplicationContext, field: Option(str, choices=["members",])) -> None:
+        if field == "members":
+            await self.get_members(ctx)
+
+    @dc.slash_command(
+        name="get_members", description="Get member data from database.",
     )
     async def get_members(self, ctx) -> None:
         member_list = await self.bot._db.get_member_data(ctx.guild_id)
         embed = dc.Embed(
             title = f"{ctx.guild} 的成員們",
-            description = df_to_ascii_table(member_list),
             color=dc.Colour.fuchsia()
         )
+        embed.add_field(name="", value=df_to_ascii_table(member_list), inline=True)
 
         await ctx.respond(embed=embed)
 
