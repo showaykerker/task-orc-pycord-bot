@@ -77,12 +77,6 @@ class Database(Cog):
         
         await self.get_members(ctx, "以下的成員已經成功加到資料庫中。")
 
-    @dc.slash_command(
-        name="set_trello", description="Set trello key and token"
-    )
-    async def set_trello(self, ctx: ApplicationContext, key: Option(str), token: Option(str)) -> None:
-        await self.bot._db.set_trello_key_token(ctx.guild_id, key, token)
-
 
     
 
