@@ -13,8 +13,11 @@ def encrypt(plain_text):
     if not key:
         raise ValueError("No encryption key found. Please run `python encrypt.py -g` to generate a key")
 
-    f = Fernet(base64.b64decode(key))
-    return f.encrypt(plain_text.encode()).decode()
+    cipher_suite = Fernet(base64.b64decode(key))
+    encrypted_binary = cipher_suite.encrypt(plain_text.encode())
+    encoded_encrypted = base64.b64encode(encrypted_binary).decode()
+
+    return encoded_encrypted
 
 def decrypt(cipher_text):
     key = os.environ.get("ENCRYPT_KEY")
@@ -22,8 +25,10 @@ def decrypt(cipher_text):
     if not key:
         raise ValueError("No encryption key found. Please run `python encrypt.py -g` to generate a key")
 
-    f = Fernet(base64.b64decode(key))
-    return f.decrypt(cipher_text.encode()).decode()
+    cipher_suite = Fernet(base64.b64decode(key))
+    decoded = base64.b64decode(cipher_text)
+    decrypted = cipher_suite.decrypt(decoded).decode()
+    return decrypted
 
 def gen_key():
 
