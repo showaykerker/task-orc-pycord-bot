@@ -42,6 +42,11 @@ class FilteredCards:
 class TrelloHandler:
     def __init__(self):
         self._clients = {} # guild_id(str): TrelloClient
+    def _parse_input(self, inp: Union[str, int, TrelloClient]) -> TrelloClient:
+        if isinstance(inp, TrelloClient):
+            return inp
+        else:
+            return self._clients.get(str(inp))
 
     def add_client(self, guild_id: Union[str, int], key: str, token: str) -> None:
         self._clients[str(guild_id)] = TrelloClient(
@@ -53,6 +58,20 @@ class TrelloHandler:
 
     def get_boards(self, guild_id: Union[str, int]) -> List[Board]:
         return self._clients[str(guild_id)].list_boards()
+
+    def get_undone(self, inp: Union[str, int, TrelloClient]) -> Optional[FilteredCards]:
+        trello = self._parse_input(inp)
+        print("get_undone 1")
+        if trello is None: return
+        print("get_undone 2")
+        cards = FilteredCards()
+        for card in trello.search(
+                "-label:header is:open sort:due -list:done -list:ideas -list:resources",
+                models=["cards",]):
+            print(card)
+            cards.append(card)
+        cards.sort()
+        return cards
 
     def __getitem__(self, guild_id: Union[str, int]) -> TrelloClient:
         return self._clients.get(str(guild_id))
