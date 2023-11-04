@@ -88,6 +88,13 @@ class TaskOrcDB(DBHandler):
             return pd.DataFrame(
                 rows, columns=["id", "guild_id", "name", "discord_id", "trello_id"])
 
+    async def set_member_data(self, guild_id: str, member_list: list[dict]) -> None:
+        """Set member data to the database."""
+        async with self.start() as db:
+            for member in member_list:
+                await self.insert_member(
+                    MemberData(guild_id, member["name"], member["discord_id"]))
+
 
 async def test():
 
