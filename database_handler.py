@@ -19,6 +19,9 @@ def error_handler(func):
         except sqlite3.IntegrityError as e:
             print(f"\033[1;31m[TaskOrcDB] WARNING: {e}\033[0m")
             return None
+        except sqlite3.OperationalError as e:
+            print(f"\033[1;31m[TaskOrcDB] WARNING: {e}\033[0m")
+            return None
     return wrapper
 
 class TaskOrcDB(DBHandler):
@@ -102,10 +105,9 @@ class TaskOrcDB(DBHandler):
                 await self.insert_member(
                     MemberData(guild_id, member["name"], member["discord_id"]))
 
-
     # Trello related
     async def set_trello_key_token(self, guild_id: str, key: str, token: str) -> None:
-        """Save Guild's Trello Key and Token to the database."""
+        """Save Guild's Trello key and token to the database."""
         key, token = encrypt(key), encrypt(token)
         async with self.start() as db:
             await db.exec(
@@ -119,19 +121,18 @@ class TaskOrcDB(DBHandler):
 
     @error_handler
     async def get_trello_key_token(self, guild_id: str) -> Tuple[str, str]:
-        """Retrieve Guild's Trello Key and Token from the database."""
+        """Retrieve Guild's Trello key and token from the database."""
         async with self.start() as db:
+            # get key and secret as strings
             key = await db.exec(
                 "SELECT value FROM TrelloData WHERE guild_id = ? AND item = ?",
                 guild_id, "key"
             )
-            key = await key.fetchone()
             token = await db.exec(
                 "SELECT value FROM TrelloData WHERE guild_id = ? AND item = ?",
                 guild_id, "token"
             )
-            token = await token.fetchone()
-            return decrypt(key), decrypt(token)
+            return decrypt(key.fetchone()[0]), decrypt(token.fetchone()[0])
 
 
 async def test():
