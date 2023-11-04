@@ -106,8 +106,29 @@ class Trello(Cog):
                 member_id_to_name_dict[m.id] = m.full_name
 
         embed.add_field(name="", value=dict_to_ascii_table(member_id_to_name_dict), inline=True)
-
         await ctx.respond(embed=embed)
+
+    @dc.slash_command(
+        name="get_trello_undone", description="Get all undone cards"
+    )
+    async def get_trello_undone(self, ctx: ApplicationContext) -> None:
+        trello = await self.get_trello_instance(ctx)
+        if trello is None: return
+
+        await ctx.defer()
+
+        all_boards = trello.list_boards()
+        embed = dc.Embed(
+            title = "Trello上的看板:",
+            color=dc.Colour.fuchsia()
+        )
+        for card in trello.search(
+                "-label:header is:open sort:due -list:done -list:ideas -list:resources",
+                models=["cards",]):
+            print(card.name)
+            embed.add_field(name=card.name, value=card.member_id)
+        print(embed)
+        await ctx.followup.send(embed=embed)
 
     # Not used.
     # @dc.slash_command(
@@ -136,6 +157,8 @@ class Trello(Cog):
     #     trello = await self.get_trello_instance(ctx)
     #     if trello is None: return
 
+    #     await ctx.defer()
+
     #     all_boards = trello.list_boards()
     #     embed = dc.Embed(
     #         title = "Trello上的看板:",
@@ -147,7 +170,7 @@ class Trello(Cog):
     #         for card in board.all_cards():
     #             print(f"\tcard {card}")
     #             embed.add_field(name=card.name, value=card.description, inline=True)
-    #     await ctx.respond(embed=embed)
+    #     await ctx.followup.send(embed=embed)
 
 
 def setup(bot: Bot):
