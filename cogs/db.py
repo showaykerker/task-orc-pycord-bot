@@ -48,7 +48,7 @@ class Database(Cog):
         name="get_members", description="Get member data from database.",
     )
     async def get_members(self, ctx, title_overwrite="") -> None:
-        member_list = await self.bot._db.get_member_data(ctx.guild_id)
+        member_list = await self.bot.db.get_member_data(ctx.guild_id)
         title = title_overwrite if title_overwrite else f"{ctx.guild} 的成員們"
         embed = dc.Embed(
             title = title,
@@ -73,7 +73,7 @@ class Database(Cog):
                 "discord_id": member.id,
                 "trello_id": ""
             })
-        await self.bot._db.set_member_data(ctx.guild_id, member_list)
+        await self.bot.db.set_member_data(ctx.guild_id, member_list)
         
         await self.get_members(ctx, "以下的成員已經成功加到資料庫中。")
 

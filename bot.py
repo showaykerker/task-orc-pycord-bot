@@ -17,11 +17,11 @@ class TaskOrc(ezcord.Bot):
             language="ch")
         self.add_help_command()
         self.load_cogs("cogs")
-        self._db = TaskOrcDB()
+        self.db = TaskOrcDB()
 
     @watch(path="cogs", preload=True, debug=True)
     async def on_ready(self):
-        await self._db.setup()
+        await self.db.setup()
         print("Bot ready.")
 
 
