@@ -47,15 +47,44 @@ class Database(Cog):
     @dc.slash_command(
         name="get_members", description="Get member data from database.",
     )
-    async def get_members(self, ctx) -> None:
+    async def get_members(self, ctx, title_overwrite="") -> None:
         member_list = await self.bot._db.get_member_data(ctx.guild_id)
+        title = title_overwrite if title_overwrite else f"{ctx.guild} 的成員們"
         embed = dc.Embed(
-            title = f"{ctx.guild} 的成員們",
+            title = title,
             color=dc.Colour.fuchsia()
         )
         embed.add_field(name="", value=df_to_ascii_table(member_list), inline=True)
 
         await ctx.respond(embed=embed)
+
+    @dc.slash_command(
+        name="set_members", description="Set member data to database.",
+    )
+    async def set_members(self, ctx) -> None:
+        members = ctx.guild.members
+        member_list = []
+        for member in members:
+            # skip robot members
+            if member.bot:
+                continue
+            member_list.append({
+                "name": member.name,
+                "discord_id": member.id,
+                "trello_id": ""
+            })
+        await self.bot._db.set_member_data(ctx.guild_id, member_list)
+        
+        await self.get_members(ctx, "以下的成員已經成功加到資料庫中。")
+
+    @dc.slash_command(
+        name="set_trello", description="Set trello key and token"
+    )
+    async def set_trello(self, ctx: ApplicationContext, key: Option(str), token: Option(str)) -> None:
+        await self.bot._db.set_trello_key_token(ctx.guild_id, key, token)
+
+
+    
 
 
 def setup(bot: Bot):
