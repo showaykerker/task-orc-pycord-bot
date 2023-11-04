@@ -132,7 +132,11 @@ class TaskOrcDB(DBHandler):
                 "SELECT value FROM TrelloData WHERE guild_id = ? AND item = ?",
                 guild_id, "token"
             )
-            return decrypt(key.fetchone()[0]), decrypt(token.fetchone()[0])
+            key = await key.fetchone()
+            token = await token.fetchone()
+            if key is None or token is None:
+                return None, None
+            return decrypt(key[0]), decrypt(token[0])
 
 
 async def test():
