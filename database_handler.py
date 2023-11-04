@@ -10,6 +10,15 @@ class MemberData:
         self.discord_id = discord_id
         self.trello_id = trello_id
 
+def error_handler(func):
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except sqlite3.IntegrityError as e:
+            print(f"\033[1;31m[TaskOrcDB] WARNING: {e}\033[0m")
+            return None
+    return wrapper
+
 class TaskOrcDB(DBHandler):
 
     def __init__(self) -> None:
@@ -20,7 +29,7 @@ class TaskOrcDB(DBHandler):
         """Set up the database schema."""
         async with self.start() as db:
             await db.exec(
-                "CREATE TABLE IF NOT EXISTS Member "
+                "CREATE TABLE IF NOT EXISTS Member "\
                 "(id INTEGER PRIMARY KEY, guild_id TEXT, name TEXT, discord_id TEXT, trello_id TEXT)")
 
     async def insert_member(self, member: MemberData) -> None:
@@ -65,6 +74,7 @@ class TaskOrcDB(DBHandler):
                     f"trello_id \033[3m'{trello_id}'\033[1;31m. "\
                     "Skip.\033[0m\n")
 
+    @error_handler
     async def get_member_data(self, guild_id:Optional[str]="") -> pd.DataFrame:
         """Retrieve all member data as a Pandas DataFrame."""
         async with self.start() as db:
