@@ -114,20 +114,28 @@ class Trello(Cog):
     async def get_trello_undone(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
-
         await ctx.defer()
-
-        all_boards = trello.list_boards()
+        cards = self.bot.trello.get_undone(trello)
         embed = dc.Embed(
-            title = "Trello上的看板:",
-            color=dc.Colour.fuchsia()
+            title = "待完成的卡片們",
+            color = dc.Colour.fuchsia()
         )
-        for card in trello.search(
-                "-label:header is:open sort:due -list:done -list:ideas -list:resources",
-                models=["cards",]):
-            print(card.name)
-            embed.add_field(name=card.name, value=card.member_id)
-        print(embed)
+        board_id_to_name = self.bot.trello.get_board_names(ctx.guild_id)
+        if cards:
+            for i, c in enumerate(cards._c):
+                value = ""
+                member_str = ""
+                if c.due:
+                    value += f"{c.due}\n"
+                for j, m in enumerate(c.members):
+                    value += f"{m}"
+                    if j != len(c.members) -1:
+                        value += ", "
+                if c.members:
+                    value += "\n"
+                value += f"{board_id_to_name.get(c.board)} - {c.list.name}\n"
+                embed.add_field(
+                    name=f"{c.title}", value=value, inline=(i%2)==0)
         await ctx.followup.send(embed=embed)
 
     # Not used.
