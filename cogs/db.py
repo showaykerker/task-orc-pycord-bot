@@ -11,12 +11,14 @@ from pandas import DataFrame as df
 from table2ascii import table2ascii as t2a
 from table2ascii import PresetStyle
 
+
 def df_to_ascii_table(df:df) -> str:
     fields = ["name", "discord_id", "trello_id"]
     body = [[df[f][i] for f in fields] for i in df.index]
+    fields = ["Name", "DiscordID", "TrelloID"]
 
     # Trim name length
-    max_length = 10
+    max_length = 8
     for i, mem in enumerate(body):
         if len(mem[0]) > max_length:
             body[i][0] = mem[0][:max_length-2] + ".."
@@ -24,8 +26,10 @@ def df_to_ascii_table(df:df) -> str:
     table = t2a(
         header = fields,
         body = body,
-        style = PresetStyle.thick_compact,
-        cell_padding=0
+        style = PresetStyle.simple,
+        column_widths = [8, 18, 24],
+        cell_padding=0,
+        use_wcwidth=True,
     )
     return f"```\n{table}\n```"
 
