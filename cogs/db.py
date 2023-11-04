@@ -27,7 +27,7 @@ def df_to_ascii_table(df:df) -> str:
         header = fields,
         body = body,
         style = PresetStyle.simple,
-        column_widths = [8, 18, 24],
+        column_widths = [max_length, 18, 24],
         cell_padding=0,
         use_wcwidth=True,
     )
