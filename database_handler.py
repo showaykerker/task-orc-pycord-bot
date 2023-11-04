@@ -1,7 +1,9 @@
-from typing import Optional
+from typing import Optional, Tuple
 import pandas as pd
+import sqlite3
 
 from ezcord.sql import DBHandler
+from encryption import encrypt, decrypt
 
 class MemberData:
     def __init__(self, guild_id: str, name: str, discord_id: str, trello_id: Optional[str] = "") -> None:
@@ -31,6 +33,11 @@ class TaskOrcDB(DBHandler):
             await db.exec(
                 "CREATE TABLE IF NOT EXISTS Member "\
                 "(id INTEGER PRIMARY KEY, guild_id TEXT, name TEXT, discord_id TEXT, trello_id TEXT)")
+            await db.exec(
+                "CREATE TABLE IF NOT EXISTS TrelloData"\
+                "(guild_id TEXT, item TEXT, value TEXT)")
+
+    # Member related
 
     async def insert_member(self, member: MemberData) -> None:
         """Insert a new member record into the database."""
@@ -94,6 +101,37 @@ class TaskOrcDB(DBHandler):
             for member in member_list:
                 await self.insert_member(
                     MemberData(guild_id, member["name"], member["discord_id"]))
+
+
+    # Trello related
+    async def set_trello_key_token(self, guild_id: str, key: str, token: str) -> None:
+        """Save Guild's Trello Key and Token to the database."""
+        key, token = encrypt(key), encrypt(token)
+        async with self.start() as db:
+            await db.exec(
+                "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
+                guild_id, "key", key
+            )
+            await db.exec(
+                "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
+                guild_id, "token", token
+            )
+
+    @error_handler
+    async def get_trello_key_token(self, guild_id: str) -> Tuple[str, str]:
+        """Retrieve Guild's Trello Key and Token from the database."""
+        async with self.start() as db:
+            key = await db.exec(
+                "SELECT value FROM TrelloData WHERE guild_id = ? AND item = ?",
+                guild_id, "key"
+            )
+            key = await key.fetchone()
+            token = await db.exec(
+                "SELECT value FROM TrelloData WHERE guild_id = ? AND item = ?",
+                guild_id, "token"
+            )
+            token = await token.fetchone()
+            return decrypt(key), decrypt(token)
 
 
 async def test():
