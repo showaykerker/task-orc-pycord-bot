@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Optional
 import datetime
 
 from trello import TrelloClient
@@ -40,8 +40,11 @@ class FilteredCards:
 
 
 class TrelloHandler:
+
     def __init__(self):
-        self._clients = {} # guild_id(str): TrelloClient
+        self._clients = {}  # guild_id(str): TrelloClient
+        self._board_id_to_name = {}  # guild_id(str): {board_id(str): board_name}
+
     def _parse_input(self, inp: Union[str, int, TrelloClient]) -> TrelloClient:
         if isinstance(inp, TrelloClient):
             return inp
@@ -52,6 +55,20 @@ class TrelloHandler:
         self._clients[str(guild_id)] = TrelloClient(
             api_key=key,
             api_secret=token)
+        self.update_board_id_to_name(guild_id)
+
+    def update_board_id_to_name(self, guild_id: Union[str, int]) -> None:
+        trello = self._clients[str(guild_id)]
+        if trello is None: return
+        self._board_id_to_name[str(guild_id)] = {}
+        all_boards = trello.list_boards()
+        for b in all_boards:
+            self._board_id_to_name[str(guild_id)][b.id] = b.name
+
+    def get_board_names(self, guild_id: Union[str, int]) -> dict:
+        self.update_board_id_to_name(guild_id)
+        guild_boards = self._board_id_to_name.get(str(guild_id))
+        return guild_boards if guild_boards else {}
 
     def contains_guild(self, guild_id: Union[str, int]) -> bool:
         return str(guild_id) in self._clients.keys()
