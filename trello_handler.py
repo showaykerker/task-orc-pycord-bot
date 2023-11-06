@@ -57,8 +57,10 @@ class TrelloHandler:
         self.update_board_id_to_name(guild_id)
 
     def remove_client(self, guild_id: Union[str, int]) -> None:
-        del self._clients[str(guild_id)]
-        self._board_id_to_name[str(guild_id)] = {}
+        if str(guild_id) in self._clients.keys():
+            del self._clients[str(guild_id)]
+        if str(guild_id) in self._board_id_to_name.keys():
+            self._board_id_to_name[str(guild_id)] = {}
 
     def update_board_id_to_name(self, guild_id: Union[str, int]) -> None:
         trello = self._clients[str(guild_id)]
