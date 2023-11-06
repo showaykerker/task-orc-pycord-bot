@@ -14,7 +14,7 @@ dotenv.load_dotenv()
 class TaskOrc(ezcord.Bot):
     def __init__(self):
         super().__init__(
-            intents=discord.Intents.default(),
+            intents=discord.Intents.all(),
             language="ch")
         self.add_help_command()
         self.load_cogs("cogs")
