@@ -5,6 +5,7 @@ from itertools import cycle
 
 from discord import ApplicationContext
 from discord import Option
+from discord.commands import SlashCommandGroup
 from ezcord.internal.dc import discord as dc
 from ezcord import Bot, Cog
 from pandas import DataFrame as df
@@ -27,7 +28,7 @@ def df_to_ascii_table(df:df) -> str:
         header = fields,
         body = body,
         style = PresetStyle.simple,
-        column_widths = [max_length, 18, 24],
+        column_widths = [max_length, 20, 24],
         cell_padding=0,
         use_wcwidth=True,
     )
@@ -37,19 +38,19 @@ class Database(Cog):
     def __init__(self, bot: Bot):
         super().__init__(bot)
 
-    @dc.slash_command(
-        name="get", description="Get data from the database"
-    )
-    async def get(self, ctx: ApplicationContext, field: Option(str, choices=["members",])) -> None:
-        if field == "members":
-            await self.get_members(ctx)
+    db_cmd = SlashCommandGroup("db", "db operations")
+    getters = db_cmd.create_subgroup("get", "getters")
+    setters = db_cmd.create_subgroup("set", "setters")
 
-    @dc.slash_command(
-        name="get_members", description="Get member data from database.",
+    @getters.command(
+        name="members", description="Get member data from database.",
     )
-    async def get_members(self, ctx, title_overwrite="") -> None:
+    async def members(self, ctx: ApplicationContext) -> None:
+        await self._get_members(ctx, f"{ctx.guild} 的成員們")
+
+    async def _get_members(self, ctx: ApplicationContext, title: str) -> None:
         member_list = await self.bot.db.get_member_data(ctx.guild_id)
-        title = title_overwrite if title_overwrite else f"{ctx.guild} 的成員們"
+        title = title if title else f"{ctx.guild} 的成員們"
         embed = dc.Embed(
             title = title,
             color=dc.Colour.fuchsia()
@@ -59,26 +60,14 @@ class Database(Cog):
         await ctx.respond(embed=embed)
 
     @dc.slash_command(
-        name="set_members", description="Set member data to database.",
+        name="configure_guild_members", description="Fetch member data to database.",
     )
-    async def set_members(self, ctx) -> None:
-        members = ctx.guild.members
-        member_list = []
-        for member in members:
-            # skip robot members
-            if member.bot:
-                continue
-            member_list.append({
-                "name": member.name,
-                "discord_id": member.id,
-                "trello_id": ""
-            })
-        await self.bot.db.set_member_data(ctx.guild_id, member_list)
-        
-        await self.get_members(ctx, "以下的成員已經成功加到資料庫中。")
+    async def configure_guild_members(self, ctx: ApplicationContext) -> None:
+        await self.bot.db.configure_guild_members(ctx)
+        await self._get_members(ctx, "以下的成員已經成功加到資料庫中。")
 
 
-    
+
 
 
 def setup(bot: Bot):

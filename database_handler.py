@@ -2,6 +2,7 @@ from typing import Optional, Tuple
 import pandas as pd
 import sqlite3
 
+from discord import ApplicationContext
 from ezcord.sql import DBHandler
 from encryption import encrypt, decrypt
 
@@ -84,6 +85,19 @@ class TaskOrcDB(DBHandler):
                     f"trello_id \033[3m'{trello_id}'\033[1;31m. "\
                     "Skip.\033[0m\n")
 
+    async def configure_guild_members(self, ctx:ApplicationContext) -> None:
+        member_list = []
+        async for member in ctx.guild.fetch_members():
+            # skip robot members
+            if member.bot:
+                continue
+            member_list.append({
+                "name": member.name,
+                "discord_id": member.id,
+                "trello_id": ""
+            })
+        await self.set_member_data(ctx.guild_id, member_list)
+
     @error_handler
     async def get_member_data(self, guild_id:Optional[str]="") -> pd.DataFrame:
         """Retrieve all member data as a Pandas DataFrame."""
@@ -106,18 +120,36 @@ class TaskOrcDB(DBHandler):
                     MemberData(guild_id, member["name"], member["discord_id"]))
 
     # Trello related
-    async def set_trello_key_token(self, guild_id: str, key: str, token: str) -> None:
+    async def set_trello_key_token(self, guild_id: str, key: str, token: str) -> bool:
         """Save Guild's Trello key and token to the database."""
+
         key, token = encrypt(key), encrypt(token)
+
         async with self.start() as db:
-            await db.exec(
-                "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
-                guild_id, "key", key
-            )
-            await db.exec(
-                "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
-                guild_id, "token", token
-            )
+            exists = await db.exec(
+                "SELECT EXISTS(SELECT 1 FROM TrelloData WHERE guild_id = ?)", guild_id)
+            exists = await exists.fetchone()
+            print(f"[DBH] Exists = {exists}")
+            if exists[0]:
+                await db.exec(
+                    "UPDATE TrelloData SET value = ? WHERE guild_id = ? AND item = ?",
+                    key, guild_id, "key"
+                )
+                await db.exec(
+                    "UPDATE TrelloData SET value = ? WHERE guild_id = ? AND item = ?",
+                    token, guild_id, "token"
+                )
+                return True
+            else:
+                await db.exec(
+                    "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
+                    guild_id, "key", key
+                )
+                await db.exec(
+                    "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
+                    guild_id, "token", token
+                )
+                return False
 
     @error_handler
     async def get_trello_key_token(self, guild_id: str) -> Tuple[str, str]:
