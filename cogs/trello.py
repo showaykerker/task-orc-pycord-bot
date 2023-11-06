@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import random
 from typing import List, Optional
@@ -12,6 +13,10 @@ from ezcord import Bot, Cog, emb
 from trello import TrelloClient
 from table2ascii import table2ascii as t2a
 from table2ascii import PresetStyle
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from views import SetTrelloUserIdView
 
 no_trello_error_msg = lambda ctx: emb.error(
     ctx, "No Trello configuration found. Use /configure_trello First.")
@@ -69,14 +74,25 @@ class Trello(Cog):
             ctx: ApplicationContext,
             key: Option(str),
             token: Option(str)) -> None:
-        member_list = await self.bot.db.get_member_data(ctx.guild_id)
-        await self.bot.db.configure_guild_members(ctx)
         is_updated = await self.bot.db.set_trello_key_token(ctx.guild_id, key, token)
         if is_updated:
             await emb.success(ctx, "Trello key and token updated.")
             self.bot.trello.remove_client(ctx.guild_id)
         trello = await self.get_trello_instance(ctx)
-        await self.boards(ctx)
+
+        # Update guild member list
+        await self.bot.db.configure_guild_members(ctx)
+        member_list = await self.bot.db.get_member_data(ctx.guild_id)
+        trello_id_to_name_dict = await self.bot.trello.get_members(trello)
+
+        members_in_guild_to_be_assigned = dict(
+            [(m, i) for m, i in zip(member_list['name'], member_list['discord_id'])])
+        trello_candidates = trello_id_to_name_dict
+        trello_candidates["None"] = "None"
+        is_set_callback = lambda discord_id, trello_id: self.bot.db.update_trello_id(ctx.guild_id, discord_id, trello_id)
+        view = SetTrelloUserIdView(members_in_guild_to_be_assigned, trello_candidates, is_set_callback)
+        await ctx.followup.send("用下拉選單設定成員名稱對照", view=view)
+
 
     @tgetters.command(
         name="boards", description="Get all boards"
@@ -107,7 +123,6 @@ class Trello(Cog):
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
 
-        all_boards = trello.list_boards()
         embed = dc.Embed(
             title = "Trello上的成員:",
             color=dc.Colour.fuchsia()
