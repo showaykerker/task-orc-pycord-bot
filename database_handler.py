@@ -47,7 +47,7 @@ class TaskOrcDB(DBHandler):
         """Insert a new member record into the database."""
         assert isinstance(member, MemberData)
         assert member.guild_id
-        assert member.name
+        assert member.discord_id
 
         async with self.start() as db:
             row = await db.exec("SELECT * FROM Member WHERE guild_id = ? AND discord_id = ?",
@@ -93,8 +93,7 @@ class TaskOrcDB(DBHandler):
                 continue
             member_list.append({
                 "name": member.name,
-                "discord_id": member.id,
-                "trello_id": ""
+                "discord_id": member.id
             })
         await self.set_member_data(ctx.guild_id, member_list)
 
