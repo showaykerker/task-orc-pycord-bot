@@ -1,4 +1,4 @@
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Dict
 import datetime
 
 from trello import TrelloClient
@@ -19,7 +19,7 @@ class DateCard(Card):
         if self._due:
             return self._due + datetime.timedelta(hours=8)
         return None
-    
+
     def stamp(self) -> float:
         if self._due:
             return self._due.timestamp()
@@ -38,12 +38,24 @@ class FilteredCards:
         self._c.sort(key=lambda x: x.stamp())
 
 
-
 class TrelloHandler:
 
     def __init__(self):
         self._clients = {}  # guild_id(str): TrelloClient
         self._board_id_to_name = {}  # guild_id(str): {board_id(str): board_name}
+
+    def error_handler(func):
+        async def wrapper(self, *args, **kwargs):
+            try:
+                return await func(self, *args, **kwargs)
+            except trello.exceptions.Unauthorized as e:
+                print(f"[TrelloHandler] Error: {e}, it's poosible that "\
+                    "the key/token is invalid.")
+                return None
+            except Exception as e:
+                print(f"[TrelloHandler] Error: {e}")
+                return None
+        return wrapper
 
     def _parse_input(self, inp: Union[str, int, TrelloClient]) -> TrelloClient:
         if isinstance(inp, TrelloClient):
@@ -56,6 +68,10 @@ class TrelloHandler:
             api_key=key,
             api_secret=token)
         self.update_board_id_to_name(guild_id)
+
+    def remove_client(self, guild_id: Union[str, int]) -> None:
+        del self._clients[str(guild_id)]
+        self._board_id_to_name[str(guild_id)] = {}
 
     def update_board_id_to_name(self, guild_id: Union[str, int]) -> None:
         trello = self._clients[str(guild_id)]
@@ -73,20 +89,35 @@ class TrelloHandler:
     def contains_guild(self, guild_id: Union[str, int]) -> bool:
         return str(guild_id) in self._clients.keys()
 
+    @error_handler
+    async def get_members(self, inp: Union[str, int, TrelloClient]) -> Dict[str, str]:
+        trello = self._parse_input(inp)
+        if trello is None: return
+
+        all_boards = trello.list_boards()
+        member_id_to_name_dict = {}
+        for board in all_boards:
+            for m in board.all_members():
+                member_id_to_name_dict[m.id] = m.full_name
+        return member_id_to_name_dict
+
+    @error_handler
     def get_boards(self, guild_id: Union[str, int]) -> List[Board]:
         return self._clients[str(guild_id)].list_boards()
 
+    @error_handler
     def get_undone(self, inp: Union[str, int, TrelloClient]) -> Optional[FilteredCards]:
         trello = self._parse_input(inp)
-        print("get_undone 1")
         if trello is None: return
-        print("get_undone 2")
         cards = FilteredCards()
         for card in trello.search(
                 "-label:header is:open sort:due -list:done -list:ideas -list:resources",
                 models=["cards",]):
-            print(card)
             cards.append(card)
+        # for board in trello.list_boards():
+        #     for c in board.open_cards():
+        #         if c
+        #         cards.append(card)
         cards.sort()
         return cards
 

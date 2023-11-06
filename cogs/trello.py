@@ -6,6 +6,7 @@ from itertools import cycle
 
 from discord import ApplicationContext
 from discord import Option
+from discord.commands import SlashCommandGroup
 from ezcord.internal.dc import discord as dc
 from ezcord import Bot, Cog, emb
 from trello import TrelloClient
@@ -13,7 +14,7 @@ from table2ascii import table2ascii as t2a
 from table2ascii import PresetStyle
 
 no_trello_error_msg = lambda ctx: emb.error(
-    ctx, "No Trello configuration found. Use /configure_trello First.") 
+    ctx, "No Trello configuration found. Use /configure_trello First.")
 
 def dict_to_ascii_table(id_to_name: dict) -> str:
     fields = ["TrelloID", "Name"]
@@ -39,6 +40,10 @@ class Trello(Cog):
     def __init__(self, bot: Bot):
         super().__init__(bot)
 
+    trello_cmd = SlashCommandGroup("trello", "trello operations")
+    tgetters = trello_cmd.create_subgroup("get", "getters")
+    tsetters = trello_cmd.create_subgroup("set", "setters")
+
     async def get_trello_instance(
             self,
             ctx: ApplicationContext) -> TrelloClient:
@@ -52,24 +57,31 @@ class Trello(Cog):
         if trello:
             return trello
         await no_trello_error_msg(ctx)
-        return 
+        return
+
+    trello_get = SlashCommandGroup("trello_get", "Getters")
 
     @dc.slash_command(
-        name="congifure_trello", description="Set trello key and token"
+        name="configure_trello", description="Set trello key and token"
     )
-    async def congifure_trello(
+    async def configure_trello(
             self,
             ctx: ApplicationContext,
             key: Option(str),
             token: Option(str)) -> None:
-        await self.bot.db.set_trello_key_token(ctx.guild_id, key, token)
-        trello = await self.get_trello_instance(ctx, key, token)
-        await self.get_boards(ctx)
+        member_list = await self.bot.db.get_member_data(ctx.guild_id)
+        await self.bot.db.configure_guild_members(ctx)
+        is_updated = await self.bot.db.set_trello_key_token(ctx.guild_id, key, token)
+        if is_updated:
+            await emb.success(ctx, "Trello key and token updated.")
+            self.bot.trello.remove_client(ctx.guild_id)
+        trello = await self.get_trello_instance(ctx)
+        await self.boards(ctx)
 
-    @dc.slash_command(
-        name="get_boards", description="Get all boards"
+    @tgetters.command(
+        name="boards", description="Get all boards"
     )
-    async def get_boards(self, ctx: ApplicationContext) -> None:
+    async def boards(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
 
@@ -84,14 +96,14 @@ class Trello(Cog):
                 desc = f"{board.description[:100]}.."
             elif board.description:
                 desc = f"*{board.description}*"
-            
+
             embed.add_field(name=board.name, value=desc, inline=False)
         await ctx.respond(embed=embed)
 
-    @dc.slash_command(
-        name="get_trello_users", description="Get all Trello Users Info"
+    @tgetters.command(
+        name="members", description="Get all Trello Users Info"
     )
-    async def get_trello_users(self, ctx: ApplicationContext) -> None:
+    async def get_trello_members(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
 
@@ -100,16 +112,13 @@ class Trello(Cog):
             title = "Trello上的成員:",
             color=dc.Colour.fuchsia()
         )
-        member_id_to_name_dict = {}
-        for board in all_boards:
-            for m in board.all_members():
-                member_id_to_name_dict[m.id] = m.full_name
+        member_id_to_name_dict = await self.bot.trello.get_members(trello)
 
         embed.add_field(name="", value=dict_to_ascii_table(member_id_to_name_dict), inline=True)
         await ctx.respond(embed=embed)
 
-    @dc.slash_command(
-        name="get_trello_undone", description="Get all undone cards"
+    @tgetters.command(
+        name="undone", description="Get all undone cards"
     )
     async def get_trello_undone(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
