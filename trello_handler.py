@@ -44,19 +44,6 @@ class TrelloHandler:
         self._clients = {}  # guild_id(str): TrelloClient
         self._board_id_to_name = {}  # guild_id(str): {board_id(str): board_name}
 
-    def error_handler(func):
-        async def wrapper(self, *args, **kwargs):
-            try:
-                return await func(self, *args, **kwargs)
-            except trello.exceptions.Unauthorized as e:
-                print(f"[TrelloHandler] Error: {e}, it's poosible that "\
-                    "the key/token is invalid.")
-                return None
-            except Exception as e:
-                print(f"[TrelloHandler] Error: {e}")
-                return None
-        return wrapper
-
     def _parse_input(self, inp: Union[str, int, TrelloClient]) -> TrelloClient:
         if isinstance(inp, TrelloClient):
             return inp
@@ -89,7 +76,6 @@ class TrelloHandler:
     def contains_guild(self, guild_id: Union[str, int]) -> bool:
         return str(guild_id) in self._clients.keys()
 
-    @error_handler
     async def get_members(self, inp: Union[str, int, TrelloClient]) -> Dict[str, str]:
         trello = self._parse_input(inp)
         if trello is None: return
@@ -101,11 +87,9 @@ class TrelloHandler:
                 member_id_to_name_dict[m.id] = m.full_name
         return member_id_to_name_dict
 
-    @error_handler
     def get_boards(self, guild_id: Union[str, int]) -> List[Board]:
         return self._clients[str(guild_id)].list_boards()
 
-    @error_handler
     def get_undone(self, inp: Union[str, int, TrelloClient]) -> Optional[FilteredCards]:
         trello = self._parse_input(inp)
         if trello is None: return
