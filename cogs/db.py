@@ -19,7 +19,7 @@ def df_to_ascii_table(df:df) -> str:
     fields = ["Name", "DiscordID", "TrelloID"]
 
     # Trim name length
-    max_length = 8
+    max_length = 16
     for i, mem in enumerate(body):
         if len(mem[0]) > max_length:
             body[i][0] = mem[0][:max_length-2] + ".."
@@ -28,7 +28,7 @@ def df_to_ascii_table(df:df) -> str:
         header = fields,
         body = body,
         style = PresetStyle.simple,
-        column_widths = [max_length, 20, 24],
+        column_widths = [max_length, 22, 26],
         cell_padding=0,
         use_wcwidth=True,
     )
@@ -51,13 +51,7 @@ class Database(Cog):
     async def _get_members(self, ctx: ApplicationContext, title: str) -> None:
         member_list = await self.bot.db.get_member_data(ctx.guild_id)
         title = title if title else f"{ctx.guild} 的成員們"
-        embed = dc.Embed(
-            title = title,
-            color=dc.Colour.fuchsia()
-        )
-        embed.add_field(name="", value=df_to_ascii_table(member_list), inline=True)
-
-        await ctx.respond(embed=embed)
+        await ctx.respond(f"**{title}**\n{df_to_ascii_table(member_list)}")
 
     @dc.slash_command(
         name="configure_guild_members", description="Fetch member data to database.",
