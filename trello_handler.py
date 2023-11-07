@@ -17,7 +17,7 @@ class DateCard(Card):
     @property
     def due(self):
         if self._due:
-            return self._due + datetime.timedelta(hours=8)
+            return (self._due + datetime.timedelta(hours=8)).strftime("%Y-%m-%d")
         return None
 
     def stamp(self) -> float:
@@ -36,6 +36,18 @@ class FilteredCards:
 
     def sort(self):
         self._c.sort(key=lambda x: x.stamp())
+
+    def to_list_of_dict(self) -> List[dict]:
+        return [{
+            "board": c.board,
+            "list": c.list,
+            "title": c.title,
+            "due": c.due,
+            "members": c.members
+        } for c in self._c]
+
+    def __len__(self):
+        return len(self._c)
 
 
 class TrelloHandler:
