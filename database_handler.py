@@ -91,7 +91,7 @@ class TaskOrcDB(DBHandler):
             if member.bot:
                 continue
             member_list.append({
-                "name": member.name,
+                "name": member.display_name,
                 "discord_id": member.id
             })
         await self.set_member_data(ctx.guild_id, member_list)
