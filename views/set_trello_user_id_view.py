@@ -2,12 +2,29 @@ import discord
 from discord import ButtonStyle
 from discord.ui import View, Select, Button
 from ezcord.internal.dc import discord as dc
+from table2ascii import table2ascii as t2a
+from table2ascii import PresetStyle
+
+def dict_to_ascii_table(discord_name_to_trello_name: dict) -> str:
+    fields = ["Discord Name", "Trello Name"]
+
+    # Trim name length
+    body = [[k[:20], v[:20]] for k, v in discord_name_to_trello_name.items()]
+
+    table = t2a(
+        header = fields,
+        body = body,
+        style = PresetStyle.simple,
+        cell_padding=1,
+        use_wcwidth=True,
+    )
+    return f"```\n{table}\n```"
 
 class SetTrelloUserIdView(View):
-    def __init__(self, members_in_guild_to_be_assigned, options, is_set_callback):
+    def __init__(self, members_in_guild_to_be_assigned, trello_id_to_name_dict, is_set_callback):
         super().__init__()
         self.to_be_assigned = members_in_guild_to_be_assigned
-        self.options = options
+        self.options = trello_id_to_name_dict
         self.is_set_callback = is_set_callback
 
         for member_discord_name, member_discord_id in self.to_be_assigned.items():
@@ -18,12 +35,9 @@ class SetTrelloUserIdView(View):
             select.custom_id = member_discord_name
             self.add_item(select)
 
-        self.embed = dc.Embed(
-            title = "Result:",
-            color=dc.Colour.fuchsia()
-        )
         self.selected_item_to_embed_field_id = {}
         self.results_discord_name_to_trello_id = {}
+        self.results_discord_name_to_trello_name = {}
 
         self.is_set_button = Button(
             label="Is Set",
@@ -42,19 +56,25 @@ class SetTrelloUserIdView(View):
                 discord_id = self.to_be_assigned[discord_name]
                 if trello_id:
                     await self.is_set_callback(discord_id, trello_id)
-            #         actually_set.append(discord_name)
-            # actually_set_verbose = ", ".join(actually_set)
-            # await interaction.send_response(f"Set trello ID for member {actually_set_verbose}")
-
+                    actually_set.append(discord_name)
+            actually_set_verbose = ", ".join(actually_set)
+            self.disable_all_items()
+            await interaction.response.edit_message(
+                content=f"Set trello ID for member {actually_set_verbose}",
+                view=self)
 
     async def on_select(self, interaction):
-        member_id = interaction.data["values"][0]
-        item = interaction.data["custom_id"]
-        if self.selected_item_to_embed_field_id.get(item) is not None:
-            index = self.selected_item_to_embed_field_id.get(item)
-            self.embed.set_field_at(index, name=item, value=member_id, inline=False)
-        else:
-            self.selected_item_to_embed_field_id[item] = len(self.embed.fields)
-            self.embed.add_field(name=item, value=member_id, inline=False)
-        self.results_discord_name_to_trello_id[item] = member_id
-        await interaction.response.edit_message(embed=self.embed)
+        trello_id = interaction.data["values"][0]
+        discord_name = interaction.data["custom_id"]
+        trello_name = self.options.get(trello_id)
+        self.results_discord_name_to_trello_id[discord_name] = trello_id
+        self.results_discord_name_to_trello_name[discord_name] = trello_name
+        embed = dc.Embed(
+            title = "Result:",
+            color=dc.Colour.fuchsia()
+        )
+        embed.add_field(
+            name="",
+            value=dict_to_ascii_table(self.results_discord_name_to_trello_name)
+        )
+        await interaction.response.edit_message(embed=embed)
