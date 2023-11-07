@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union, Dict
 import pandas as pd
 import sqlite3
 
@@ -97,18 +97,25 @@ class TaskOrcDB(DBHandler):
         await self.set_member_data(ctx.guild_id, member_list)
 
     @error_handler
-    async def get_member_data(self, guild_id:Optional[str]="") -> pd.DataFrame:
+    async def get_member_data(self, guild_id: Union[str, int]) -> pd.DataFrame:
         """Retrieve all member data as a Pandas DataFrame."""
         async with self.start() as db:
-            if guild_id:
-                rows = await db.exec("SELECT * FROM Member WHERE guild_id = ?",
-                    guild_id
-                )
-            else:
-                rows = await db.exec("SELECT * FROM Member")
+            rows = await db.exec("SELECT * FROM Member WHERE guild_id = ?",
+                guild_id
+            )
             rows = await rows.fetchall()
             return pd.DataFrame(
                 rows, columns=["id", "guild_id", "name", "discord_id", "trello_id"])
+
+    async def get_discord_name_to_trello_id_dict(self, guild_id: Union[str, int]) -> Dict[str, str]:
+        """Retrieve member name from Trello ID."""
+        data = await self.get_member_data(guild_id)
+        return dict(zip(data["name"], data["trello_id"]))
+
+    async def get_trello_id_to_discord_name_dict(self, guild_id: Union[str, int]) -> Dict[str, str]:
+        """Retrieve member name from Trello ID."""
+        data = await self.get_member_data(guild_id)
+        return dict(zip(data["trello_id"], data["name"]))
 
     async def set_member_data(self, guild_id: str, member_list: list[dict]) -> None:
         """Set member data to the database."""
