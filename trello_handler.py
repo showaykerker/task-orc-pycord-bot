@@ -1,6 +1,7 @@
 from typing import Union, List, Optional, Dict
 import datetime
 
+import numpy as np
 from trello import TrelloClient
 from trello.board import Board
 from trello.card import Card
@@ -24,7 +25,7 @@ class DateCard(Card):
         if self._due:
             return self._due.timestamp()
         else:
-            return (datetime.datetime.max - datetime.timedelta(days=1)).timestamp()
+            return np.inf
 
 
 class FilteredCards:
