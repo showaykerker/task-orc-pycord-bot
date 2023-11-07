@@ -54,16 +54,15 @@ class TaskOrcDB(DBHandler):
                 member.guild_id, member.discord_id)
             row = await row.fetchone()
             if row:
-                print(f"\033[0;33m[TaskOrcDB] WARNING"\
-                    f"Member \033[3m'{member.name}'\033[0;33m with "\
-                    f"guild_id \033[3m'{member.guild_id}'\033[0;33m and "\
-                    f"discord_id \033[3m'{member.discord_id}'\033[0;33m "\
-                    "already exists. Skip.\033[0m")
-                return
-            await db.exec(
-                "INSERT INTO Member (guild_id, name, discord_id, trello_id) VALUES (?, ?, ?, ?)",
-                member.guild_id, member.name, member.discord_id, member.trello_id
-            )
+                await db.exec(
+                    "UPDATE Member SET name = ? WHERE guild_id = ? AND discord_id = ?",
+                    member.name, member.guild_id, member.discord_id
+                )
+            else:
+                await db.exec(
+                    "INSERT INTO Member (guild_id, name, discord_id, trello_id) VALUES (?, ?, ?, ?)",
+                    member.guild_id, member.name, member.discord_id, member.trello_id
+                )
 
     async def update_trello_id(self, guild_id: str, discord_id: str, trello_id: str) -> None:
         """Add a Trello ID to an existing member record."""
