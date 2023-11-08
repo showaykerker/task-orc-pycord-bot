@@ -127,14 +127,9 @@ class TrelloHandler:
         if trello is None: return
         cards = FilteredCards()
         for card in trello.search(
-                "-label:header is:open sort:due -list:done -list:ideas -list:resources",
+                "-label:header is:open -list:ideas -list:resources -due:complete sort:due",
                 models=["cards",]):
             cards.append(card)
-        # for board in trello.list_boards():
-        #     for c in board.open_cards():
-        #         if c
-        #         cards.append(card)
-        cards.sort()
         return cards
 
     def __getitem__(self, guild_id: Union[str, int]) -> TrelloClient:
