@@ -128,7 +128,7 @@ class TrelloHandler:
         cards = FilteredCards()
         for card in trello.search(
                 "-label:header is:open -list:ideas -list:resources -due:complete sort:due",
-                models=["cards",]):
+                models=["cards",], cards_limit=1000):
             cards.append(card)
         return cards
 
