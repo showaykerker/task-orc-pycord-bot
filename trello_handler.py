@@ -1,5 +1,6 @@
 from typing import Union, List, Optional, Dict
 import datetime
+import math
 
 import numpy as np
 from trello import TrelloClient
@@ -38,14 +39,30 @@ class FilteredCards:
     def sort(self):
         self._c.sort(key=lambda x: x.stamp())
 
-    def to_list_of_dict(self) -> List[dict]:
-        return [{
-            "board": c.board,
-            "list": c.list,
-            "title": c.title,
-            "due": c.due,
-            "members": c.members
-        } for c in self._c]
+    def to_list_of_dict(
+            self,
+            trello_id_to_discord_name: Dict[str, str],
+            member_max_length: int=None) -> List[dict]:
+        return_list = []
+        for c in self._c:
+            ms = len(c.members)
+            member_strings = []
+            for i_m, member in enumerate(c.members):
+                size_limit = np.inf if member_max_length is None else\
+                    math.floor((member_max_length - (ms-1)) / ms)
+                member_str = trello_id_to_discord_name.get(member) or member
+                if len(member_str) > size_limit:
+                    member_str = member_str[:size_limit-1] + "."
+                member_strings.append(member_str)
+            member_strings = "|".join(member_strings)
+            return_list.append({
+                "board": c.board,
+                "list": c.list,
+                "title": c.title,
+                "due": c.due,
+                "members": member_strings
+            })
+        return return_list
 
     def __len__(self):
         return len(self._c)

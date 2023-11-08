@@ -23,6 +23,7 @@ from table2ascii import Merge
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from views import SetTrelloUserIdView
+from constant_values import charater_emojis, due_emojis
 
 no_trello_error_msg = lambda ctx: emb.error(
     ctx, "No Trello configuration found. Use /configure_trello First.")
@@ -43,28 +44,6 @@ def dict_to_ascii_table(id_to_name: dict) -> str:
         style = PresetStyle.simple,
         cell_padding=1
     )
-    return f"```\n{table}\n```"
-
-def card_dict_list_to_ascii_table(card_dict_list: dict) -> str:
-    # {
-    #     "board": c.board,
-    #     "list": c.list,
-    #     "title": c.title,
-    #     "due": c.due,
-    #     "members": c.members
-    # }
-    fields = ["Due", "Members", "Title", ""]
-    body = []
-    name_max_length = 20
-    title_max_length = 24
-    for c in card_dict_list:
-        body.append([
-            c["due"],
-            c["members"],
-            c["title"],
-            Merge.LEFT
-        ])
-    table = t2a(header=fields, body=body, column_widths=[12, name_max_length, title_max_length, 2], cell_padding=0, style=PresetStyle.minimalist)
     return f"```\n{table}\n```"
 
 class Trello(Cog):
@@ -168,29 +147,27 @@ class Trello(Cog):
         await ctx.defer()
         board_id_to_name = self.bot.trello.get_board_names(ctx.guild_id)
         trello_id_to_discord_name = await self.bot.db.get_trello_id_to_discord_name_dict(ctx.guild_id)
-
-        cards_per_page = 10
-        name_max_length = 16
         if filtered_cards := self.bot.trello.get_undone(trello):
-            list_of_dict_cards = filtered_cards.to_list_of_dict()
+            embed = dc.Embed(
+                title="Trello上的未完成卡片:",
+                color=dc.Colour.lighter_grey()
+            )
+            card_length = 18
+            list_of_dict_cards = filtered_cards.to_list_of_dict(
+                trello_id_to_discord_name = trello_id_to_discord_name,
+                member_max_length = card_length-2)
             for card_dict in list_of_dict_cards:
-                ms = len(card_dict["members"])
-                for i_m, member in enumerate(card_dict["members"]):
-                    size_limit = math.floor((name_max_length - (ms-1)) / ms)
-                    member_str = trello_id_to_discord_name.get(member) or member
-                    if len(member_str) > size_limit:
-                        member_str = member_str[:size_limit-1] + "."
-                    card_dict["members"][i_m] = member_str
-                card_dict["members"] = "|".join(card_dict["members"])
-            cards_to_show = []
-            for i, c in enumerate(list_of_dict_cards):
-                cards_to_show.append(c)
-                if (i+1) % cards_per_page == 0 or i == len(list_of_dict_cards)-1:
-                    response_str = card_dict_list_to_ascii_table(cards_to_show)
-                    await ctx.followup.send(response_str)
-                    cards_to_show = []
+                value = f'{random.choice(charater_emojis)} {card_dict["members"]}\n' if card_dict["members"] else ""
+                value += f'{random.choice(due_emojis)} {card_dict["due"]}\n' if card_dict["due"] else ""
+                value += f'{"—"*14}\n'
+                embed.add_field(
+                    name=f':jigsaw:{card_dict["title"]}',
+                    value=value,
+                    inline=True)
+            await ctx.followup.send(embed=embed)
         else:
             await ctx.followup.send("No undone cards found.")
+
 
     # Not used.
     # @dc.slash_command(
