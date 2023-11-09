@@ -9,7 +9,7 @@
 
 - [x] Complete undone trello card command.
 - [x] Add a command to show all undone Trello cards assigned to a user.
-- [ ] Modify trello configuring with an option to not pass in key and token.
+- [x] Modify trello configuring with an option to not pass in key and token.
 - [ ] Figure out a way to show check lists in cards.
 - [ ] Add ChatGPT support for task assigning.
 - [x] ~~Compare speed of getting interested cards between directly from requests to py-trello.~~ (Py-trello is faster)
