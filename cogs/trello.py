@@ -141,13 +141,18 @@ class Trello(Cog):
     @tgetters.command(
         name="undone", description="Get all undone cards"
     )
-    async def get_trello_undone(self, ctx: ApplicationContext) -> None:
+    async def get_trello_undone(
+            self,
+            ctx: ApplicationContext,
+            user: str=Option(str, choices=['me', 'all'], default='me', required=False)) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
         await ctx.defer()
         board_id_to_name = self.bot.trello.get_board_names(ctx.guild_id)
         trello_id_to_discord_name = await self.bot.db.get_trello_id_to_discord_name_dict(ctx.guild_id)
-        if filtered_cards := self.bot.trello.get_undone(trello):
+        discord_id = ctx.user.id if user == "me" else None
+        trello_id = await self.bot.db.get_trello_id_from_discord_id(ctx.guild_id, discord_id)
+        if filtered_cards := self.bot.trello.get_undone(trello, trello_id):
             embed = dc.Embed(
                 title="Trello上的未完成卡片:",
                 color=dc.Colour.lighter_grey()
@@ -167,7 +172,6 @@ class Trello(Cog):
             await ctx.followup.send(embed=embed)
         else:
             await ctx.followup.send("No undone cards found.")
-
 
     # Not used.
     # @dc.slash_command(
