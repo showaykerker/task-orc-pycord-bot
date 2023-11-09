@@ -78,12 +78,15 @@ class Trello(Cog):
     async def configure_trello(
             self,
             ctx: ApplicationContext,
-            key: Option(str),
-            token: Option(str)) -> None:
-        is_updated = await self.bot.db.set_trello_key_token(ctx.guild_id, key, token)
-        if is_updated:
-            await emb.success(ctx, "Trello key and token updated.")
-            self.bot.trello.remove_client(ctx.guild_id)
+            key: Optional[str]=None,
+            token: Optional[str]=None) -> None:
+        await ctx.defer()
+        if key and token:
+            is_updated = await self.bot.db.set_trello_key_token(ctx.guild_id, key, token)
+            if is_updated:
+                await emb.success(ctx, "Trello key and token updated.")
+                self.bot.trello.remove_client(ctx.guild_id)
+
         trello = await self.get_trello_instance(ctx)
 
         # Update guild member list
