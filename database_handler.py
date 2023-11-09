@@ -30,6 +30,7 @@ class TaskOrcDB(DBHandler):
     def __init__(self) -> None:
         """Initialize the database handler."""
         super().__init__("taskorc.db")
+        # self.member_data = {}  # {"guild_id": [MemberData, ]}
 
     async def setup(self) -> None:
         """Set up the database schema."""
@@ -116,6 +117,15 @@ class TaskOrcDB(DBHandler):
         """Retrieve member name from Trello ID."""
         data = await self.get_member_data(guild_id)
         return dict(zip(data["trello_id"], data["name"]))
+
+    async def get_trello_id_from_discord_id(self, guild_id: Union[str, int], discord_id: str) -> str:
+        """Retrieve Trello ID from Discord ID."""
+        async with self.start() as db:
+            rows = await db.exec("SELECT trello_id FROM Member WHERE guild_id = ? AND discord_id = ?",
+                guild_id, discord_id
+            )
+            rows = await rows.fetchone()
+            return None if rows is None else rows[0]
 
     async def set_member_data(self, guild_id: str, member_list: list[dict]) -> None:
         """Set member data to the database."""
