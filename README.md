@@ -12,6 +12,7 @@
 - [x] ~~Modify trello configuring with an option to not pass in key and token.~~ (23/11/10)
 - [x] ~~Show already set trello id table when re-configuring.~~ (23/11/10)
 - [x] ~~Compare speed of getting interested cards between directly from requests to py-trello.~~ (Py-trello is faster)
+- [ ] Add link to cards and link to all cards page.
 - [ ] Figure out a way to show check lists in cards.
 - [ ] Add ChatGPT support for task assigning.
 - [ ] UI to select Trello boards/ lists to get cards from.
