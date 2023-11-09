@@ -108,10 +108,11 @@ class TaskOrcDB(DBHandler):
             return pd.DataFrame(
                 rows, columns=["id", "guild_id", "name", "discord_id", "trello_id"])
 
-    async def get_discord_name_to_trello_id_dict(self, guild_id: Union[str, int]) -> Dict[str, str]:
+    async def get_discord_name_to_trello_id_dict(self, guild_id: Union[str, int], member_data: pd.DataFrame=None) -> Dict[str, str]:
         """Retrieve member name from Trello ID."""
-        data = await self.get_member_data(guild_id)
-        return dict(zip(data["name"], data["trello_id"]))
+        if member_data is None:
+            member_data = await self.get_member_data(guild_id)
+        return dict(zip(member_data["name"], member_data["trello_id"]))
 
     async def get_trello_id_to_discord_name_dict(self, guild_id: Union[str, int]) -> Dict[str, str]:
         """Retrieve member name from Trello ID."""

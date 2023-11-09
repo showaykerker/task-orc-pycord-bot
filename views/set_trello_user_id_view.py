@@ -21,7 +21,13 @@ def dict_to_ascii_table(discord_name_to_trello_name: dict) -> str:
     return f"```\n{table}\n```"
 
 class SetTrelloUserIdView(View):
-    def __init__(self, members_in_guild_to_be_assigned, trello_id_to_name_dict, is_set_callback):
+    def __init__(
+            self,
+            ctx,
+            members_in_guild_to_be_assigned,
+            trello_id_to_name_dict,
+            is_set_callback,
+            discord_name_to_trello_name_dict={}):
         super().__init__()
         self.to_be_assigned = members_in_guild_to_be_assigned
         self.options = trello_id_to_name_dict
@@ -42,7 +48,13 @@ class SetTrelloUserIdView(View):
 
         self.selected_item_to_embed_field_id = {}
         self.results_discord_name_to_trello_id = {}
-        self.results_discord_name_to_trello_name = {}
+        self.results_discord_name_to_trello_name = discord_name_to_trello_name_dict
+
+        if discord_name_to_trello_name_dict:
+            self.embed.add_field(
+                name="",
+                value=dict_to_ascii_table(self.results_discord_name_to_trello_name)
+            )
 
         self.is_set_button = Button(
             label="Is Set",
@@ -73,6 +85,7 @@ class SetTrelloUserIdView(View):
         trello_id = interaction.data["values"][0]
         discord_name = interaction.data["custom_id"]
         trello_name = self.options.get(trello_id)
+
         self.results_discord_name_to_trello_id[discord_name] = trello_id
         self.results_discord_name_to_trello_name[discord_name] = trello_name
         if self.embed.fields:
