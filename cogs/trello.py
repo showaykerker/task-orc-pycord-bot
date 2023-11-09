@@ -180,6 +180,10 @@ class Trello(Cog):
         else:
             await ctx.followup.send("No undone cards found.")
 
+    @tgetters.command(name="all_undone", description="Get all undone cards")
+    async def get_all_trello_undone(self, ctx: ApplicationContext) -> None:
+        await self.get_trello_undone(ctx, user="all")
+
     # Not used.
     # @dc.slash_command(
     #     name="get_trello_lists", description="Get all Trello Lists"
