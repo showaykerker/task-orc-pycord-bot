@@ -7,6 +7,7 @@ from typing import List, Optional
 from itertools import cycle
 
 from wcwidth import wcswidth
+import discord
 from discord import ApplicationContext
 from discord import Option
 from discord import InteractionResponse
@@ -169,13 +170,23 @@ class Trello(Cog):
                 trello_id_to_discord_name = trello_id_to_discord_name,
                 member_max_length = card_length-2)
             for card_dict in list_of_dict_cards:
+                card_link = f"[↗↗]({card_dict['url']})"
                 value = f'{random.choice(charater_emojis)} {card_dict["members"]}\n' if card_dict["members"] else ""
-                value += f'{random.choice(due_emojis)} {card_dict["due"]}\n' if card_dict["due"] else ""
-                value += f'{"—"*14}\n'
+                value += f'{random.choice(due_emojis)} {card_dict["due"]} \n' if card_dict["due"] else ""
+                value += "\n" if value == "" else ""
+                value += f'{"—"*5} {card_link} {"—"*5}\n'
                 embed.add_field(
                     name=f':jigsaw:{card_dict["title"]}',
                     value=value,
                     inline=True)
+            try:
+                if user == "me" and trello_id:
+                    embed.add_field(
+                        name="",
+                        value=f"[»»»»»»»»»»»»»»](https://trello.com/u/{trello_id}/cards)",
+                        inline=False)
+            except discord.errors.ExtensionFailed:
+                pass
             await ctx.followup.send(embed=embed)
         else:
             await ctx.followup.send("No undone cards found.")

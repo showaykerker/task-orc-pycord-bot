@@ -10,6 +10,7 @@ from trello.card import Card
 class DateCard(Card):
     def __init__(self, card: Card):
         self._card = card
+        self.url = card.short_url
         self.board = card.board_id
         self.list = card.get_list()
         self.title = card.name
@@ -56,6 +57,7 @@ class FilteredCards:
                 member_strings.append(member_str)
             member_strings = "|".join(member_strings)
             return_list.append({
+                "url": c.url,
                 "board": c.board,
                 "list": c.list,
                 "title": c.title,
