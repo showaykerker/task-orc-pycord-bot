@@ -12,9 +12,10 @@
 - [x] ~~Modify trello configuring with an option to not pass in key and token.~~ (23/11/10)
 - [x] ~~Show already set trello id table when re-configuring.~~ (23/11/10)
 - [x] ~~Compare speed of getting interested cards between directly from requests to py-trello.~~ (Py-trello is faster)
-- [ ] Add link to cards and link to all cards page.
+- [x] ~~Add link to cards and link to all cards page.~~ (23/11/11)
+- [x] ~~Add ChatGPT support for task assigning.~~ (ChatGPT not stable enough)
 - [ ] Figure out a way to show check lists in cards.
-- [ ] Add ChatGPT support for task assigning.
+- [ ] Use rule-based method to handle task assiging messages and turn it into a Trello cards.
 - [ ] UI to select Trello boards/ lists to get cards from.
 - [ ] Handle Trello ID congifuring if members > 5.
 - [ ] Isolate configure command to another command group that can only be used by admins.
