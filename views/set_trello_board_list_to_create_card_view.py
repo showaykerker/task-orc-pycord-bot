@@ -55,6 +55,8 @@ class SetTrelloBoardListToCreateCard(View):
             color=dc.Colour.fuchsia()
         )
 
+        self.set_visualization()
+
         self.is_set_button = Button(
             label="完成！",
             custom_id="is_set_button",
@@ -79,6 +81,7 @@ class SetTrelloBoardListToCreateCard(View):
                 self.ctx.guild_id,
                 self.trello_settings.board_id_list_id_to_create_card)
             self.embed.color=dc.Colour.green()
+            self.set_visualization()
             await interaction.response.edit_message(
                 content=f"完成設定！",
                 view=self, embed=self.embed)
@@ -88,4 +91,4 @@ class SetTrelloBoardListToCreateCard(View):
         lid = interaction.data["values"][0]
         self.trello_settings.board_id_list_id_to_create_card[bid] = lid
         self.set_visualization()
-        await interaction.response.edit_message(embed=self.embed)
+        await interaction.response.edit_message(embed=self.embed, view=self)
