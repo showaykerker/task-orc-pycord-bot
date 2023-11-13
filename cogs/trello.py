@@ -25,9 +25,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from views import SetTrelloUserIdView, SetTrelloTargetListView, SetTrelloBoardListToCreateCard
 from constant_values import charater_emojis, due_emojis
+from modals import BoardKeywordModal
 
 no_trello_error_msg = lambda ctx: emb.error(
     ctx, "No Trello configuration found. Use /configure_trello First.")
+
 
 def dict_to_ascii_table(id_to_name: dict) -> str:
     fields = ["TrelloID", "Name"]
@@ -228,6 +230,17 @@ class Trello(Cog):
     @tgetters.command(name="all_undone", description="Get all undone cards")
     async def get_all_trello_undone(self, ctx: ApplicationContext) -> None:
         await self.get_trello_undone(ctx, user="all")
+
+    @dc.slash_command(name="set_board_keywords")
+    async def set_board_keywords(self, ctx: ApplicationContext) -> None:
+        trello = await self.get_trello_instance(ctx)
+        if trello is None: return
+
+        board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
+        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
+
+        modal = BoardKeywordModal(ctx, board_list_data, trello_settings, self.bot.db)
+        await ctx.send_modal(modal)
 
     # Not used.
     # @dc.slash_command(
