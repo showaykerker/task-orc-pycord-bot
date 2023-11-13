@@ -121,6 +121,7 @@ class Trello(Cog):
 
         board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
         trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
+        print(trello_settings)
 
         view = SetTrelloTargetListView(ctx, board_list_data, trello_settings, self.bot.db)
         await ctx.followup.send("用下拉選單設定追蹤的看板", view=view, embed=view.embed)

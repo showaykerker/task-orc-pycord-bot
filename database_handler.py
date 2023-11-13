@@ -1,4 +1,5 @@
 from typing import Optional, Tuple, Union, Dict, List
+import json
 import pandas as pd
 import sqlite3
 
@@ -27,10 +28,15 @@ def error_handler(func):
 
 class TrelloSettings:
     def __init__(self, rows: list[tuple]) -> None:
-        self.trello_traced_list_id = []
+        self.list_name_not_to_trace = []
         for row in rows:
-            if row[1] == "trello_traced_list_id":
-                self.trello_traced_list_id.append(row[2])
+            if row[1] == "trello_no_trace_list_name":
+                self.list_name_not_to_trace.append(row[2])
+
+    def __str__(self) -> str:
+        return "<TrelloSettings>\n" +\
+            "list_name_not_to_trace: \n"\
+            f"{json.dumps(self.list_name_not_to_trace, indent=4, ensure_ascii=False)}\n"
 
 
 class TaskOrcDB(DBHandler):
@@ -195,28 +201,28 @@ class TaskOrcDB(DBHandler):
             return decrypt(key[0]), decrypt(token[0])
 
 
-    async def set_trello_traced_list_id(self, guild_id: str, trello_traced_list_id: List[str]) -> None:
+    async def set_trello_traced_list_name_not_to_trace(self, guild_id: str, trello_no_trace_list_name: List[str]) -> None:
         """Save Trello traced list ID to the database."""
         async with self.start() as db:
             exists = await db.exec(
-                "SELECT EXISTS(SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?)", guild_id, "trello_traced_list_id")
+                "SELECT EXISTS(SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?)", guild_id, "trello_no_trace_list_name")
             exists = await exists.fetchall()
             if exists:
                 await db.exec(
                     "DELETE FROM TrelloData WHERE guild_id = ? AND item = ?",
-                    guild_id, "trello_traced_list_id"
+                    guild_id, "trello_no_trace_list_name"
                 )
-            for tid in trello_traced_list_id:
+            for tid in trello_no_trace_list_name:
                 await db.exec(
                     "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
-                    guild_id, "trello_traced_list_id", tid
+                    guild_id, "trello_no_trace_list_name", tid
                 )
 
     async def get_trello_settings(self, guild_id: Union[str, int]) -> TrelloSettings:
         """Retrieve Trello settings from the database."""
         async with self.start() as db:
             rows = await db.exec("SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?",
-                guild_id, "trello_traced_list_id"
+                guild_id, "trello_no_trace_list_name"
             )
             rows = await rows.fetchall()
             return TrelloSettings(rows)
