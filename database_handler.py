@@ -27,16 +27,25 @@ def error_handler(func):
     return wrapper
 
 class TrelloSettings:
-    def __init__(self, rows: list[tuple]) -> None:
+    def __init__(
+            self,
+            trello_no_trace_list_name: list[Tuple[str]],
+            board_id_list_id_to_create_card: list[Tuple[str]]) -> None:
         self.list_name_not_to_trace = []
-        for row in rows:
+        self.board_id_list_id_to_create_card = {}
+        for row in trello_no_trace_list_name:
             if row[1] == "trello_no_trace_list_name":
                 self.list_name_not_to_trace.append(row[2])
+        for row in board_id_list_id_to_create_card:
+            if row[1] == "board_id_list_id_to_create_card":
+                self.board_id_list_id_to_create_card[row[2]] = row[3]
 
     def __str__(self) -> str:
-        return "<TrelloSettings>\n" +\
+        return "<TrelloSettings>\n"\
             "list_name_not_to_trace: \n"\
-            f"{json.dumps(self.list_name_not_to_trace, indent=4, ensure_ascii=False)}\n"
+            f"{json.dumps(self.list_name_not_to_trace, indent=4, ensure_ascii=False)}\n"\
+            "board_id_list_id_to_create_card: \n"\
+            f"{json.dumps(self.board_id_list_id_to_create_card, indent=4, ensure_ascii=False)}\n"
 
 
 class TaskOrcDB(DBHandler):
@@ -218,14 +227,36 @@ class TaskOrcDB(DBHandler):
                     guild_id, "trello_no_trace_list_name", tid
                 )
 
+    async def set_trello_board_id_list_id_to_create_card(self, guild_id: str, board_id_list_id_to_create_card: Dict[str, str]) -> None:
+        """Save Trello traced list ID to the database."""
+        async with self.start() as db:
+            exists = await db.exec(
+                "SELECT EXISTS(SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?)", guild_id, "board_id_list_id_to_create_card")
+            exists = await exists.fetchall()
+            if exists:
+                await db.exec(
+                    "DELETE FROM TrelloData WHERE guild_id = ? AND item = ?",
+                    guild_id, "board_id_list_id_to_create_card"
+                )
+            for bid, lid in board_id_list_id_to_create_card.items():
+                await db.exec(
+                    "INSERT INTO TrelloData (guild_id, item, value, value2) VALUES (?, ?, ?, ?)",
+                    guild_id, "board_id_list_id_to_create_card", bid, lid
+                )
+
     async def get_trello_settings(self, guild_id: Union[str, int]) -> TrelloSettings:
         """Retrieve Trello settings from the database."""
         async with self.start() as db:
-            rows = await db.exec("SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?",
+            trello_no_trace_list_name = await db.exec("SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?",
                 guild_id, "trello_no_trace_list_name"
             )
-            rows = await rows.fetchall()
-            return TrelloSettings(rows)
+            trello_no_trace_list_name = await trello_no_trace_list_name.fetchall()
+            board_id_list_id_to_create_card = await db.exec("SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?",
+                guild_id, "board_id_list_id_to_create_card"
+            )
+            board_id_list_id_to_create_card = await board_id_list_id_to_create_card.fetchall()
+            return TrelloSettings(trello_no_trace_list_name, board_id_list_id_to_create_card)
+
 
 
 async def test():
