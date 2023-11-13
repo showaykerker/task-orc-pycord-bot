@@ -174,9 +174,12 @@ class TrelloHandler:
         all_boards = trello.list_boards()
         for board in all_boards:
             board_list_data.board_name_to_id[board.name] = board.id
+            board_list_data.board_id_to_name[board.id] = board.name
             board_list_data.board_name_to_list_name[board.name] = []
             for l in board.list_lists():
+                if l.closed: continue
                 board_list_data.list_name_to_id[l.name] = l.id
+                board_list_data.list_id_to_name[l.id] = l.name
                 board_list_data.board_name_to_list_name[board.name].append(l.name)
         return board_list_data
 
