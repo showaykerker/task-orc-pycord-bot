@@ -206,5 +206,20 @@ class TrelloHandler:
                 board_list_data.board_name_to_list_name[board.name].append(l.name)
         return board_list_data
 
+    async def add_card(
+            self,
+            inp: Union[str, int, TrelloClient],
+            board_id: str,
+            list_id: str,
+            name: str,
+            due: Optional[str],
+            assign: Optional[List[TrelloDummyAssign]]=[]) -> None:
+        # print("add_card "\
+        #     f"inp: {inp}, board_id: {board_id}, list_id: {list_id}, name: {name}, due: {due}, assign: {assign}")
+        trello = self._parse_input(inp)
+        if trello is None: return
+        trello.get_board(board_id).get_list(list_id).add_card(
+            name, desc=None, labels=None, due=due, source=None, position='top', assign=assign)
+
     def __getitem__(self, guild_id: Union[str, int]) -> TrelloClient:
         return self._clients.get(str(guild_id))
