@@ -14,8 +14,8 @@
 - [x] ~~Compare speed of getting interested cards between directly from requests to py-trello.~~ (Py-trello is faster)
 - [x] ~~Add link to cards and link to all cards page.~~ (23/11/11)
 - [x] ~~Add ChatGPT support for task assigning.~~ (ChatGPT not stable enough)
+- [x] ~~UI to select Trello boards/ lists to get cards from.~~ (23/11/13)
 - [ ] Figure out a way to show check lists in cards.
 - [ ] Use rule-based method to handle task assiging messages and turn it into a Trello cards.
-- [ ] UI to select Trello boards/ lists to get cards from.
 - [ ] Handle Trello ID congifuring if members > 5.
 - [ ] Isolate configure command to another command group that can only be used by admins.
