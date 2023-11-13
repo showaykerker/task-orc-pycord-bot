@@ -60,15 +60,18 @@ class FilteredCards:
     def __init__(self):
         self._c = []
 
-    def append(self, card: Card):
+    def append(self, card: Card) -> None:
         self._c.append(DateCard(card))
+
+    def plain_append(self, card: DateCard) -> None:
+        self._c.append(card)
 
     def sort(self):
         self._c.sort(key=lambda x: x.stamp())
 
     def to_list_of_dict(
             self,
-            trello_id_to_discord_name: Dict[str, str],
+            trello_id_to_discord_name: Optional[Dict[str, str]]={},
             member_max_length: int=None) -> List[dict]:
         return_list = []
         for c in self._c:
