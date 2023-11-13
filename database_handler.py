@@ -35,6 +35,7 @@ class TrelloSettings:
         self.list_name_not_to_trace = []  # [ListName, ]
         self.board_id_list_id_to_create_card = {}  # {BoardID: ListID}
         self.board_keywords = {}  # {BoardID: "kw1,kw2, ..."}
+        self.default_board = ""
         for row in trello_no_trace_list_name:
             if row[1] == "trello_no_trace_list_name":
                 self.list_name_not_to_trace.append(row[2])
@@ -44,6 +45,10 @@ class TrelloSettings:
         for row in board_keywords:
             if row[1] == "board_keywords":
                 self.board_keywords[row[2]] = row[3]
+                if row[3] == "":
+                    self.default_board = row[2]
+            if self.default_board == "":
+                self.default_board = list(self.board_keywords.keys())[0]
 
     def __str__(self) -> str:
         return "<TrelloSettings>\n"\
