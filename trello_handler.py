@@ -1,11 +1,30 @@
-from typing import Union, List, Optional, Dict
+from typing import Union, List, Optional, Dict, Tuple
 import datetime
 import math
+import json
 
 import numpy as np
 from trello import TrelloClient
 from trello.board import Board
 from trello.card import Card
+
+class BoardListData:
+    def __init__(self):
+        self.board_name_to_id = {}
+        self.list_name_to_id = {}
+        self.board_name_to_list_name = {}  # Dict[str, List[str]]
+
+    def __len__(self):
+        return len(self.list_name_to_id)
+
+    def __str__(self):
+        return "<BoardListData>\n" +\
+            "board_name_to_id:\n" +\
+            json.dumps(self.board_name_to_id, indent=4, ensure_ascii=False) + "\n" +\
+            "list_name_to_id:\n" +\
+            json.dumps(self.list_name_to_id, indent=4, ensure_ascii=False) + "\n" +\
+            "board_name_to_list_name:\n" +\
+            json.dumps(self.board_name_to_list_name, indent=4, ensure_ascii=False) + "\n"
 
 class DateCard(Card):
     def __init__(self, card: Card):
@@ -133,6 +152,20 @@ class TrelloHandler:
         for card in trello.search(query, models=["cards",], cards_limit=1000):
             cards.append(card)
         return cards
+
+    async def get_board_list_data(self, guild_id: Union[str, int]) -> BoardListData:
+        board_list_data = BoardListData()
+        trello = self._clients[str(guild_id)]
+        if trello is None: return board_list_data
+
+        all_boards = trello.list_boards()
+        for board in all_boards:
+            board_list_data.board_name_to_id[board.name] = board.id
+            board_list_data.board_name_to_list_name[board.name] = []
+            for l in board.list_lists():
+                board_list_data.list_name_to_id[l.name] = l.id
+                board_list_data.board_name_to_list_name[board.name].append(l.name)
+        return board_list_data
 
     def __getitem__(self, guild_id: Union[str, int]) -> TrelloClient:
         return self._clients.get(str(guild_id))

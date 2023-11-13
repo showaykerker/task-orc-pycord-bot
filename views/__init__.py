@@ -1,1 +1,2 @@
 from .set_trello_user_id_view import SetTrelloUserIdView
+from .set_trello_target_list_view import SetTrelloTargetListView

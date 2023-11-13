@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Union, Dict
+from typing import Optional, Tuple, Union, Dict, List
 import pandas as pd
 import sqlite3
 
@@ -24,6 +24,14 @@ def error_handler(func):
             print(f"\033[1;31m[TaskOrcDB] WARNING: {e}\033[0m")
             return None
     return wrapper
+
+class TrelloSettings:
+    def __init__(self, rows: list[tuple]) -> None:
+        self.trello_traced_list_id = []
+        for row in rows:
+            if row[1] == "trello_traced_list_id":
+                self.trello_traced_list_id.append(row[2])
+
 
 class TaskOrcDB(DBHandler):
 
@@ -185,6 +193,33 @@ class TaskOrcDB(DBHandler):
             if key is None or token is None:
                 return None, None
             return decrypt(key[0]), decrypt(token[0])
+
+
+    async def set_trello_traced_list_id(self, guild_id: str, trello_traced_list_id: List[str]) -> None:
+        """Save Trello traced list ID to the database."""
+        async with self.start() as db:
+            exists = await db.exec(
+                "SELECT EXISTS(SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?)", guild_id, "trello_traced_list_id")
+            exists = await exists.fetchall()
+            if exists:
+                await db.exec(
+                    "DELETE FROM TrelloData WHERE guild_id = ? AND item = ?",
+                    guild_id, "trello_traced_list_id"
+                )
+            for tid in trello_traced_list_id:
+                await db.exec(
+                    "INSERT INTO TrelloData (guild_id, item, value) VALUES (?, ?, ?)",
+                    guild_id, "trello_traced_list_id", tid
+                )
+
+    async def get_trello_settings(self, guild_id: Union[str, int]) -> TrelloSettings:
+        """Retrieve Trello settings from the database."""
+        async with self.start() as db:
+            rows = await db.exec("SELECT * FROM TrelloData WHERE guild_id = ? AND item = ?",
+                guild_id, "trello_traced_list_id"
+            )
+            rows = await rows.fetchall()
+            return TrelloSettings(rows)
 
 
 async def test():

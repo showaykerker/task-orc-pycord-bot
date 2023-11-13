@@ -23,7 +23,7 @@ from table2ascii import Merge
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from views import SetTrelloUserIdView
+from views import SetTrelloUserIdView, SetTrelloTargetListView
 from constant_values import charater_emojis, due_emojis
 
 no_trello_error_msg = lambda ctx: emb.error(
@@ -105,6 +105,20 @@ class Trello(Cog):
         is_set_callback = lambda discord_id, trello_id: self.bot.db.update_trello_id(ctx.guild_id, discord_id, trello_id)
         view = SetTrelloUserIdView(ctx, members_in_guild_to_be_assigned, trello_id_to_name_dict, is_set_callback, discord_name_to_trello_name_dict)
         await ctx.followup.send("用下拉選單設定成員名稱對照", view=view, embed=view.embed)
+
+    @dc.slash_command(
+        name="set_trello_list_to_trace"
+    )
+    async def set_trello_list_to_trace(self, ctx: ApplicationContext):
+        await ctx.defer()
+        trello = await self.get_trello_instance(ctx)
+        if trello is None: return
+
+        board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
+        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
+
+        view = SetTrelloTargetListView(ctx, board_list_data, trello_settings, self.bot.db)
+        await ctx.followup.send("用下拉選單設定追蹤的看板", view=view, embed=view.embed)
 
 
     @tgetters.command(
