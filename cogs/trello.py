@@ -3,9 +3,11 @@ import sys
 import json
 import math
 import random
-from typing import List, Optional
+from typing import List, Optional, Union, Dict
 from itertools import cycle
+import datetime
 
+import numpy as np
 from wcwidth import wcswidth
 import discord
 from discord import ApplicationContext
@@ -24,8 +26,12 @@ from table2ascii import Merge
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from views import SetTrelloUserIdView, SetTrelloTargetListView, SetTrelloBoardListToCreateCard
-from constant_values import charater_emojis, due_emojis
+from constant_values import charater_emojis, due_emojis, board_emojis
 from modals import BoardKeywordModal
+from utils import task_parser
+from trello_handler import DateCard
+from trello_handler import FilteredCards
+from trello_handler import TrelloDummyAssign
 
 no_trello_error_msg = lambda ctx: emb.error(
     ctx, "No Trello configuration found. Use /configure_trello First.")
@@ -53,6 +59,7 @@ class Trello(Cog):
 
     def __init__(self, bot: Bot):
         super().__init__(bot)
+        bot.add_listener(self.on_message)
 
     trello_cmd = SlashCommandGroup("trello", "trello operations")
     tgetters = trello_cmd.create_subgroup("get", "getters")
@@ -60,17 +67,24 @@ class Trello(Cog):
 
     async def get_trello_instance(
             self,
-            ctx: ApplicationContext) -> TrelloClient:
-        if not self.bot.trello.contains_guild(ctx.guild_id):
-            key, token = await self.bot.db.get_trello_key_token(ctx.guild_id)
+            ctx: Union[ApplicationContext,int,str]) -> TrelloClient:
+        if isinstance(ctx, ApplicationContext):
+            gid = ctx.guild_id
+        else:
+            gid = ctx
+
+        if not self.bot.trello.contains_guild(gid):
+            key, token = await self.bot.db.get_trello_key_token(gid)
             if key is None or token is None:
-                await no_trello_error_msg(ctx)
+                if isinstance(ctx, ApplicationContext):
+                    await no_trello_error_msg(ctx)
                 return
-            await self.bot.trello.add_client(ctx.guild_id, key, token)
-        trello = self.bot.trello[ctx.guild_id]
+            await self.bot.trello.add_client(gid, key, token)
+        trello = self.bot.trello[gid]
         if trello:
             return trello
-        await no_trello_error_msg(ctx)
+        if isinstance(ctx, ApplicationContext):
+            await no_trello_error_msg(ctx)
         return
 
     trello_get = SlashCommandGroup("trello_get", "Getters")
@@ -257,6 +271,87 @@ class Trello(Cog):
 
         modal = BoardKeywordModal(ctx, board_list_data, trello_settings, self.bot.db)
         await ctx.send_modal(modal)
+
+    async def on_message(self, message: discord.Message) -> None:
+        if message.author.bot or not message.content.startswith("<@1163852103958155375>"):
+            return
+        msgs = message.clean_content.split("\n")[1:]
+        tasks = task_parser.parse_tasks(msgs)
+        # print(json.dumps(tasks, indent=4, ensure_ascii=False))
+        trello = await self.get_trello_instance(message.guild.id)
+        if trello is None: return
+
+        dn2ti = await self.bot.db.get_discord_name_to_trello_id_dict(message.guild.id)
+        trello_settings = await self.bot.db.get_trello_settings(message.guild.id)
+        board_list_data = await self.bot.trello.get_board_list_data(message.guild.id)
+        assignments = tasks.get("task_assignment")
+        filtered_cards = FilteredCards()
+        for key, due_tasks in assignments.items():
+            if key == np.inf: continue
+            member_id = [TrelloDummyAssign(dn2ti.get(key)), ] if dn2ti.get(key) else []
+            for due_str, tasks in due_tasks.items():
+                if isinstance(due_str, float):
+                    due = ""
+                else:
+                    due = datetime.datetime.strptime(due_str, "%Y/%m/%d").date()
+                for task in tasks:
+                    for board_id, keywords in trello_settings.board_keywords.items():
+                        board_name = board_list_data.board_id_to_name[board_id]
+                        if board_id not in trello_settings.board_id_list_id_to_create_card.keys():
+                            emb.error(message, f"看板{board_name}沒有設定新增卡片的位置")
+                        if any([kw in task.lower() for kw in keywords.split(",")]):
+                            break
+                    else:
+                        board_id = trello_settings.default_board
+                        board_name = board_list_data.board_id_to_name[board_id]
+                    list_id = trello_settings.board_id_list_id_to_create_card[board_id]
+                    list_name = board_list_data.list_id_to_name[list_id]
+                    filtered_cards.plain_append(DateCard(
+                        board = board_name,
+                        t_list = list_name,
+                        title = task,
+                        members = [key, ],
+                        due = due))
+
+                    await self.bot.trello.add_card(
+                        trello,
+                        board_id,
+                        list_id,
+                        task,
+                        str(due),
+                        member_id)
+        if filtered_cards:
+            embed = self.get_embed_from_filtered_cards(
+                title="要新增的卡片:",
+                filtered_cards=filtered_cards,
+                show_board=True
+            )
+            await message.reply(embed=embed)
+            #     add_card(
+            # self,
+            # inp: Union[str, int, TrelloClient],
+            # board_id: str,
+            # list_id: str,
+            # name: str,
+            # due: Optional[str],
+            # assign: Optional[List[TrelloDummyAssign]]=[]) -> None:
+
+        else:
+            await message.reply("No cards to be created.")
+
+        # await self.bot.trello.create_card(
+        #     trello,
+        #     message.guild.id,
+        #     message.channel.id,
+        #     message.clean_content)
+
+
+
+    # @dc.slash_command(name="assign_tasks")
+    # async def assign_tasks(self, ctx:ApplicationContext) -> None:
+    #     # modal = MyModal(title="Modal via Slash Command")
+    #     # await ctx.send_modal(modal)
+    #     pass
 
     # Not used.
     # @dc.slash_command(
