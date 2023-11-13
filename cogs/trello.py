@@ -103,7 +103,12 @@ class Trello(Cog):
 
         trello_id_to_name_dict["None"] = "None"
         is_set_callback = lambda discord_id, trello_id: self.bot.db.update_trello_id(ctx.guild_id, discord_id, trello_id)
-        view = SetTrelloUserIdView(ctx, members_in_guild_to_be_assigned, trello_id_to_name_dict, is_set_callback, discord_name_to_trello_name_dict)
+        view = SetTrelloUserIdView(
+            ctx,
+            members_in_guild_to_be_assigned,
+            trello_id_to_name_dict,
+            is_set_callback,
+            discord_name_to_trello_name_dict)
         await ctx.followup.send("用下拉選單設定成員名稱對照", view=view, embed=view.embed)
 
     @dc.slash_command(

@@ -42,7 +42,7 @@ class SetTrelloUserIdView(View):
             self.add_item(select)
 
         self.embed = dc.Embed(
-            title = "Result:",
+            title = "名稱對照:",
             color=dc.Colour.fuchsia()
         )
 
@@ -57,7 +57,7 @@ class SetTrelloUserIdView(View):
             )
 
         self.is_set_button = Button(
-            label="Is Set",
+            label="完成！",
             custom_id="is_set_button",
             style=ButtonStyle.primary
         )
@@ -78,7 +78,7 @@ class SetTrelloUserIdView(View):
             self.disable_all_items()
             self.embed.color=dc.Colour.green()
             await interaction.response.edit_message(
-                content=f"Set trello ID for member {actually_set_verbose}",
+                content=f"完成以下成員的Trello ID設定 {actually_set_verbose}",
                 view=self, embed=self.embed)
 
     async def on_select(self, interaction):
