@@ -11,20 +11,27 @@ from trello.card import Card
 class BoardListData:
     def __init__(self):
         self.board_name_to_id = {}
+        self.board_id_to_name = {}
         self.list_name_to_id = {}
         self.board_name_to_list_name = {}  # Dict[str, List[str]]
+        self.list_id_to_name = {}
 
     def __len__(self):
         return len(self.list_name_to_id)
 
     def __str__(self):
-        return "<BoardListData>\n" +\
-            "board_name_to_id:\n" +\
-            json.dumps(self.board_name_to_id, indent=4, ensure_ascii=False) + "\n" +\
-            "list_name_to_id:\n" +\
-            json.dumps(self.list_name_to_id, indent=4, ensure_ascii=False) + "\n" +\
-            "board_name_to_list_name:\n" +\
-            json.dumps(self.board_name_to_list_name, indent=4, ensure_ascii=False) + "\n"
+        return "<BoardListData>\n"\
+            "board_name_to_id:\n"\
+            f"{json.dumps(self.board_name_to_id, indent=4, ensure_ascii=False)}\n"\
+            "board_id_to_name:\n"\
+            f"{json.dumps(self.board_id_to_name, indent=4, ensure_ascii=False)}\n"\
+            "list_name_to_id:\n"\
+            f"{json.dumps(self.list_name_to_id, indent=4, ensure_ascii=False)}\n"\
+            "board_name_to_list_name:\n"\
+            f"{json.dumps(self.board_name_to_list_name, indent=4, ensure_ascii=False)}\n"\
+            "list_id_to_name:\n"\
+            f"{json.dumps(self.list_id_to_name, indent=4, ensure_ascii=False)}"
+
 
 class DateCard(Card):
     def __init__(self, card: Card):
