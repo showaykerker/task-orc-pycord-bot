@@ -64,7 +64,8 @@ def parse_tasks(msgs):
     interested_dict = None
     last_line = None
     date_overwrite = None
-        if msg.startswith("@"):  # handle name
+    msgs = msgs if isinstance(msgs, list) else msgs.split("\n")
+    for msg in msgs:
         if msg.startswith("SetDate"):
             date_overwrite = validate(msg.split(" ")[1], check_over=False)
             continue
