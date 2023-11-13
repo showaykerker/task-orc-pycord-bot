@@ -108,11 +108,11 @@ class TrelloHandler:
         else:
             return self._clients.get(str(inp))
 
-    def add_client(self, guild_id: Union[str, int], key: str, token: str) -> None:
+    async def add_client(self, guild_id: Union[str, int], key: str, token: str) -> None:
         self._clients[str(guild_id)] = TrelloClient(
             api_key=key,
             api_secret=token)
-        self.update_board_id_to_name(guild_id)
+        await self.update_board_id_to_name(guild_id)
 
     def remove_client(self, guild_id: Union[str, int]) -> None:
         if str(guild_id) in self._clients.keys():
@@ -120,7 +120,7 @@ class TrelloHandler:
         if str(guild_id) in self._board_id_to_name.keys():
             self._board_id_to_name[str(guild_id)] = {}
 
-    def update_board_id_to_name(self, guild_id: Union[str, int]) -> None:
+    async def update_board_id_to_name(self, guild_id: Union[str, int]) -> None:
         trello = self._clients[str(guild_id)]
         if trello is None: return
         self._board_id_to_name[str(guild_id)] = {}
@@ -128,8 +128,8 @@ class TrelloHandler:
         for b in all_boards:
             self._board_id_to_name[str(guild_id)][b.id] = b.name
 
-    def get_board_names(self, guild_id: Union[str, int]) -> dict:
-        self.update_board_id_to_name(guild_id)
+    async def get_board_names(self, guild_id: Union[str, int]) -> dict:
+        await self.update_board_id_to_name(guild_id)
         guild_boards = self._board_id_to_name.get(str(guild_id))
         return guild_boards if guild_boards else {}
 
@@ -147,10 +147,10 @@ class TrelloHandler:
                 member_id_to_name_dict[m.id] = m.full_name
         return member_id_to_name_dict
 
-    def get_boards(self, guild_id: Union[str, int]) -> List[Board]:
+    async def get_boards(self, guild_id: Union[str, int]) -> List[Board]:
         return self._clients[str(guild_id)].list_boards()
 
-    def get_undone(
+    async def get_undone(
             self,
             inp: Union[str, int, TrelloClient],
             trello_id: str=None,

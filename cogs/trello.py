@@ -64,7 +64,7 @@ class Trello(Cog):
             if key is None or token is None:
                 await no_trello_error_msg(ctx)
                 return
-            self.bot.trello.add_client(ctx.guild_id, key, token)
+            await self.bot.trello.add_client(ctx.guild_id, key, token)
         trello = self.bot.trello[ctx.guild_id]
         if trello:
             return trello
@@ -135,7 +135,7 @@ class Trello(Cog):
         trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
 
         view = SetTrelloBoardListToCreateCard(ctx, board_list_data, trello_settings, self.bot.db)
-        await ctx.followup.send("用下拉選單設定看板新增卡片的清單", view=view, embed=view.embed)
+        await ctx.followup.send("用下拉選單設定新增卡片的位置", view=view, embed=view.embed)
 
 
     @tgetters.command(
@@ -187,13 +187,14 @@ class Trello(Cog):
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
         await ctx.defer()
-        board_id_to_name = self.bot.trello.get_board_names(ctx.guild_id)
+        board_id_to_name = await self.bot.trello.get_board_names(ctx.guild_id)
         trello_id_to_discord_name = await self.bot.db.get_trello_id_to_discord_name_dict(ctx.guild_id)
         discord_id = ctx.user.id if user == "me" else None
         trello_id = await self.bot.db.get_trello_id_from_discord_id(ctx.guild_id, discord_id)
         trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
         list_name_not_to_trace = trello_settings.list_name_not_to_trace
-        if filtered_cards := self.bot.trello.get_undone(trello, trello_id, list_name_not_to_trace):
+        filtered_cards = await self.bot.trello.get_undone(trello, trello_id, list_name_not_to_trace)
+        if filtered_cards:
             embed = dc.Embed(
                 title="Trello上的未完成卡片:",
                 color=dc.Colour.lighter_grey()
