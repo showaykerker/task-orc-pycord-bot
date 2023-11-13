@@ -54,7 +54,7 @@ class TaskOrcDB(DBHandler):
                 "(id INTEGER PRIMARY KEY, guild_id TEXT, name TEXT, discord_id TEXT, trello_id TEXT)")
             await db.exec(
                 "CREATE TABLE IF NOT EXISTS TrelloData"\
-                "(guild_id TEXT, item TEXT, value TEXT)")
+                "(guild_id TEXT, item TEXT, value TEXT, value2 TEXT)")
 
     # Member related
 
