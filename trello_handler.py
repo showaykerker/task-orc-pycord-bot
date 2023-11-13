@@ -32,16 +32,36 @@ class BoardListData:
             "list_id_to_name:\n"\
             f"{json.dumps(self.list_id_to_name, indent=4, ensure_ascii=False)}"
 
+class TrelloDummyAssign:
+    def __init__(self, assignee_id: str):
+        self.id = assignee_id
 
 class DateCard(Card):
-    def __init__(self, card: Card):
-        self._card = card
-        self.url = card.short_url
-        self.board = card.board_id
-        self.list = card.get_list()
-        self.title = card.name
-        self.members = card.member_id
-        self._due = card.due_date
+    def __init__(
+            self,
+            card: Optional[Card]=None,
+            due: Optional[datetime.datetime]=None,
+            board: Optional[str]=None,
+            t_list: Optional[str]=None,
+            title: Optional[str]=None,
+            members: Optional[List[str]]=None):
+        if card:
+            self._card = card
+            self.url = card.short_url
+            self.board = card.board_id
+            self.list = card.get_list()
+            self.title = card.name
+            self.members = card.member_id
+            self._due = card.due_date
+        else:
+            self._card = None
+            self.url = None
+            self.board = board
+            self.list = t_list
+            self.title = title
+            self.members = members
+            self._due = due
+
 
     @property
     def due(self):
