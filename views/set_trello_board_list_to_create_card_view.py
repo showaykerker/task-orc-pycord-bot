@@ -32,7 +32,7 @@ class SetTrelloBoardListToCreateCard(View):
             bid = board_list_data.board_name_to_id[bn]
             if bid in trello_settings.board_id_list_id_to_create_card.keys():
                 default_lid = trello_settings.board_id_list_id_to_create_card[bid]
-                default_ln = board_list_data.list_id_to_name[lid]
+                default_ln = board_list_data.list_id_to_name[default_lid]
             else:
                 default_ln = ""
             for ln in list_names:
