@@ -143,12 +143,18 @@ class TrelloHandler:
     def get_boards(self, guild_id: Union[str, int]) -> List[Board]:
         return self._clients[str(guild_id)].list_boards()
 
-    def get_undone(self, inp: Union[str, int, TrelloClient], trello_id: str=None) -> Optional[FilteredCards]:
+    def get_undone(
+            self,
+            inp: Union[str, int, TrelloClient],
+            trello_id: str=None,
+            list_name_not_to_trace: List[str] = []) -> Optional[FilteredCards]:
         trello = self._parse_input(inp)
         if trello is None: return
         cards = FilteredCards()
-        query = "-label:header is:open -list:ideas -list:resources -due:complete sort:due"
+        query = "is:open -due:complete sort:due -label:header"
         if trello_id: query += f" member:{trello_id}"
+        for name in list_name_not_to_trace:
+            query += f" -list:\"{name}\""
         for card in trello.search(query, models=["cards",], cards_limit=1000):
             cards.append(card)
         return cards

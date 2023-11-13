@@ -121,7 +121,6 @@ class Trello(Cog):
 
         board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
         trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
-        print(trello_settings)
 
         view = SetTrelloTargetListView(ctx, board_list_data, trello_settings, self.bot.db)
         await ctx.followup.send("用下拉選單設定追蹤的看板", view=view, embed=view.embed)
@@ -180,7 +179,9 @@ class Trello(Cog):
         trello_id_to_discord_name = await self.bot.db.get_trello_id_to_discord_name_dict(ctx.guild_id)
         discord_id = ctx.user.id if user == "me" else None
         trello_id = await self.bot.db.get_trello_id_from_discord_id(ctx.guild_id, discord_id)
-        if filtered_cards := self.bot.trello.get_undone(trello, trello_id):
+        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
+        list_name_not_to_trace = trello_settings.list_name_not_to_trace
+        if filtered_cards := self.bot.trello.get_undone(trello, trello_id, list_name_not_to_trace):
             embed = dc.Embed(
                 title="Trello上的未完成卡片:",
                 color=dc.Colour.lighter_grey()
