@@ -1,2 +1,3 @@
 from .set_trello_user_id_view import SetTrelloUserIdView
 from .set_trello_target_list_view import SetTrelloTargetListView
+from .set_trello_board_list_to_create_card_view import SetTrelloBoardListToCreateCard

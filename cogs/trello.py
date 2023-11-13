@@ -23,7 +23,7 @@ from table2ascii import Merge
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from views import SetTrelloUserIdView, SetTrelloTargetListView
+from views import SetTrelloUserIdView, SetTrelloTargetListView, SetTrelloBoardListToCreateCard
 from constant_values import charater_emojis, due_emojis
 
 no_trello_error_msg = lambda ctx: emb.error(
@@ -124,6 +124,18 @@ class Trello(Cog):
 
         view = SetTrelloTargetListView(ctx, board_list_data, trello_settings, self.bot.db)
         await ctx.followup.send("用下拉選單設定追蹤的看板", view=view, embed=view.embed)
+
+    @dc.slash_command(name="set_trello_board_list_to_create")
+    async def set_trello_board_list_to_create_card(self, ctx: ApplicationContext):
+        await ctx.defer()
+        trello = await self.get_trello_instance(ctx)
+        if trello is None: return
+
+        board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
+        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
+
+        view = SetTrelloBoardListToCreateCard(ctx, board_list_data, trello_settings, self.bot.db)
+        await ctx.followup.send("用下拉選單設定看板新增卡片的清單", view=view, embed=view.embed)
 
 
     @tgetters.command(
