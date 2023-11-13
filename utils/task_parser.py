@@ -10,15 +10,15 @@ weekday_definition = {
     "mo.": 0, "tu.": 1, "we.": 2, "th.": 3,"fr.": 4, "sa.": 5, "su.": 6
 }
 
-def weekday_to_date(weekday):
+def weekday_to_date(weekday, date_overwrite=None):
     assert isinstance(weekday, int) and 0 <= weekday <= 6
-    curr = datetime.datetime.now().date()
+    curr = date_overwrite or datetime.datetime.now().date()
     curr_wd = curr.weekday()
     weekday -= curr_wd
     weekdaydelta = weekday if weekday >= 0 else weekday + 7
     return curr + relativedelta(days= weekdaydelta)
 
-def validate(date_text):
+def validate(date_text, date_overwrite=None, check_over=True):
 
     date = None
     all_digits = False
@@ -28,7 +28,7 @@ def validate(date_text):
             all_digits = True
     except ValueError:
         pass
-    
+
     if all_digits:
         date_text = str(date_text)
         if len(date_text) == 3:  # handle format 0MDD
@@ -36,22 +36,26 @@ def validate(date_text):
         elif len(date_text) == 4:  # handle format MMDD
             date_text = f"{date_text[:2]}/{date_text[2:]}"
         elif len(date_text) == 6:  # handle format YYMMDD
-            date_text = f"{date_text[:2]}/{date_text[2:4]}/{date_text[4:]}"
+            date_text = f"20{date_text[:2]}/{date_text[2:4]}/{date_text[4:]}"
         elif len(date_text) == 8:  # handle format YYYYMMDD
             date_text = f"{date_text[:4]}/{date_text[4:6]}/{date_text[6:]}"
 
     try:
-        date = parse(date_text)    
+        date = parse(date_text)
     except ValueError:
         pass
 
     if date is None:
         return None
 
-    if date < datetime.datetime.now():
+    date = date.date()
+
+    target_datetime = date_overwrite or datetime.datetime.now().date()
+
+    if date < target_datetime and check_over:
         date += relativedelta(years=1)
 
-    return date.date()
+    return date
 
 def parse_tasks(msgs):
     structured = {"task_assignment": {np.inf: defaultdict(list, {})}, "schedule": defaultdict(list, {})}
@@ -59,8 +63,12 @@ def parse_tasks(msgs):
     current_schedule = None
     interested_dict = None
     last_line = None
-    for msg in msgs.split("\n"):
+    date_overwrite = None
         if msg.startswith("@"):  # handle name
+        if msg.startswith("SetDate"):
+            date_overwrite = validate(msg.split(" ")[1], check_over=False)
+            continue
+        elif msg.startswith("@"):  # handle name
             current_asignee = msg[1:]
             current_schedule = None
             structured["task_assignment"][current_asignee.strip()] = defaultdict(list, {np.inf: []})
@@ -72,9 +80,9 @@ def parse_tasks(msgs):
             interested_dict = structured["schedule"][msg.strip()]
         elif msg.lower().startswith(tuple(weekday_definition.keys())):
             wd = weekday_definition[msg.lower().split(" ")[0]]
-            d = weekday_to_date(wd)
+            d = weekday_to_date(wd, date_overwrite=date_overwrite)
             interested_dict[d.strftime(format="%Y/%m/%d")].append(" ".join(msg.split(" ")[1:]))
-        elif d:= validate(msg.split(" ")[0]):
+        elif d:= validate(msg.split(" ")[0], date_overwrite=date_overwrite):
             interested_dict[d.strftime(format="%Y/%m/%d")].append(" ".join(msg.split(" ")[1:]))
         elif msg in ["", "\n", None]:  # handle spaces
             pass
