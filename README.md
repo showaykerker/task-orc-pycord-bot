@@ -4,6 +4,8 @@
 ### Slash Commands
 #### Trello
 * `/trello get undone [me/all]`
+* `/set_trello_list_to_trace`
+* `/set_trello_board_list_to_create`
 
 ## TODO
 

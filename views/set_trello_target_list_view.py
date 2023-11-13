@@ -53,13 +53,7 @@ class SetTrelloTargetListView(View):
             custom_id = "select_target"
         )
 
-        # self.is_set_button = Button(
-        #     label = "完成",
-        #     custom_id = "is_set_button",
-        #     style = ButtonStyle.primary
-        # )
         self.add_item(select)
-        # self.add_item(self.is_set_button)
 
         self.embed = dc.Embed(
             title = "追蹤清單:",
