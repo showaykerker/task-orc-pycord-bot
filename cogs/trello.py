@@ -197,24 +197,10 @@ class Trello(Cog):
         list_name_not_to_trace = trello_settings.list_name_not_to_trace
         filtered_cards = await self.bot.trello.get_undone(trello, trello_id, list_name_not_to_trace)
         if filtered_cards:
-            embed = dc.Embed(
+            embed = self.get_embed_from_filtered_cards(
                 title="Trello上的未完成卡片:",
-                color=dc.Colour.lighter_grey()
-            )
-            card_length = 18
-            list_of_dict_cards = filtered_cards.to_list_of_dict(
-                trello_id_to_discord_name = trello_id_to_discord_name,
-                member_max_length = card_length-2)
-            for card_dict in list_of_dict_cards:
-                card_link = f"[↗↗]({card_dict['url']})"
-                value = f'{random.choice(charater_emojis)} {card_dict["members"]}\n' if card_dict["members"] else ""
-                value += f'{random.choice(due_emojis)} {card_dict["due"]} \n' if card_dict["due"] else ""
-                value += "\n" if value == "" else ""
-                value += f'{"—"*5} {card_link} {"—"*5}\n'
-                embed.add_field(
-                    name=f':jigsaw:{card_dict["title"]}',
-                    value=value,
-                    inline=True)
+                filtered_cards=filtered_cards,
+                trello_id_to_discord_name=trello_id_to_discord_name)
             try:
                 if user == "me" and trello_id:
                     embed.add_field(
@@ -226,6 +212,36 @@ class Trello(Cog):
             await ctx.followup.send(embed=embed)
         else:
             await ctx.followup.send("No undone cards found.")
+
+    def get_embed_from_filtered_cards(
+            self,
+            title: str,
+            filtered_cards: FilteredCards,
+            trello_id_to_discord_name: Optional[Dict[str, str]] = {},
+            show_board=False) -> dc.Embed:
+        print(show_board)
+        embed = dc.Embed(
+            title=title,
+            color=dc.Colour.lighter_grey()
+        )
+        card_length = 18
+        list_of_dict_cards = filtered_cards.to_list_of_dict(
+            trello_id_to_discord_name = trello_id_to_discord_name,
+            member_max_length = card_length-2)
+        for card_dict in list_of_dict_cards:
+            card_link = f" [↗↗]({card_dict['url']}) " if card_dict["url"] else "—"*5
+            value = f'{random.choice(charater_emojis)} {card_dict["members"]}\n' if card_dict["members"] else ""
+            if show_board:
+                value += f'{random.choice(board_emojis)} {card_dict["board"]}\n'
+            value += f'{random.choice(due_emojis)} {card_dict["due"]} \n' if card_dict["due"] else ""
+            value += "\n" if value == "" else ""
+            value += f'{"—"*5}{card_link}{"—"*5}\n'
+            embed.add_field(
+                name=f':jigsaw:{card_dict["title"]}',
+                value=value,
+                inline=True)
+        return embed
+
 
     @tgetters.command(name="all_undone", description="Get all undone cards")
     async def get_all_trello_undone(self, ctx: ApplicationContext) -> None:
