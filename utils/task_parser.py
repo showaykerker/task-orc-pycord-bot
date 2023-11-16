@@ -83,6 +83,8 @@ def parse_tasks(msgs):
             wd = weekday_definition[msg.lower().split(" ")[0]]
             d = weekday_to_date(wd, date_overwrite=date_overwrite)
             interested_dict[d.strftime(format="%Y/%m/%d")].append(" ".join(msg.split(" ")[1:]))
+        elif msg.count(" ") == 0:
+            interested_dict[np.inf].append(msg)
         elif d:= validate(msg.split(" ")[0], date_overwrite=date_overwrite):
             interested_dict[d.strftime(format="%Y/%m/%d")].append(" ".join(msg.split(" ")[1:]))
         elif msg in ["", "\n", None]:  # handle spaces
