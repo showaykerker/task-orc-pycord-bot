@@ -241,6 +241,7 @@ class Trello(Cog):
             filtered_cards: FilteredCards,
             trello_id_to_discord_name: Optional[Dict[str, str]] = {},
             show_board=False) -> dc.Embed:
+
         embed = dc.Embed(
             title=title,
             color=dc.Colour.lighter_grey()
@@ -298,7 +299,10 @@ class Trello(Cog):
         card_add_info = {"board_ids": [], "list_ids": [], "names": [], "dues": [], "assigns": []}
         for key, due_tasks in assignments.items():
             if key == np.inf: continue
-            member_id = [TrelloDummyAssign(dn2ti.get(key)), ] if dn2ti.get(key) else []
+            if "everyone" in key:
+                member_id = [TrelloDummyAssign(tid) for tid in dn2ti.values()]
+            else:
+                member_id = [TrelloDummyAssign(dn2ti.get(key)), ] if dn2ti.get(key) else []
             for due_str, tasks in due_tasks.items():
                 if isinstance(due_str, float):
                     due = ""
