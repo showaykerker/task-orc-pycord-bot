@@ -6,6 +6,7 @@ import json
 import numpy as np
 from trello import TrelloClient
 from trello.board import Board
+from trello.trellolist import List as TrelloList
 from trello.card import Card
 
 class BoardListData:
@@ -206,22 +207,47 @@ class TrelloHandler:
                 board_list_data.board_name_to_list_name[board.name].append(l.name)
         return board_list_data
 
-    async def add_card(
+    async def add_card(self, trello: TrelloClient, t_list: TrelloList, card: Dict) -> Card:
+        try:
+            return t_list.add_card(
+                card["name"],
+                desc=None,
+                labels=None,
+                due=card["due"],
+                source=None,
+                position='top',
+                assign=card["assign"])
+        except Exception as e:
+            print(e)
+            return None
+
+    async def add_cards(
             self,
             inp: Union[str, int, TrelloClient],
-            board_id: str,
-            list_id: str,
-            name: str,
-            due: Optional[str],
-            assign: Optional[List[TrelloDummyAssign]]=[]) -> None:
-        # print("add_card "\
-        #     f"inp: {inp}, board_id: {board_id}, list_id: {list_id}, name: {name}, due: {due}, assign: {assign}")
+            board_ids: List[str],
+            list_ids: List[str],
+            names: List[str],
+            dues: List[Optional[str]],
+            assigns: List[Optional[List[TrelloDummyAssign]]]=[],
+            serials: List[int]=[]) -> Dict[str, Card]:
         trello = self._parse_input(inp)
         if trello is None: return
-        if due:
-            due = f"{due}T15:59:59.000Z"
-        trello.get_board(board_id).get_list(list_id).add_card(
-            name, desc=None, labels=None, due=due, source=None, position='top', assign=assign)
+        request_dict = {}  # {"board_id": {"list_id": [{"name": name, "due": due, "assign": assign, "serial": serial}, ...], ...}, ...}
+        for i, (bid, lid, n, due, assign, serial) in enumerate(zip(board_ids, list_ids, names, dues, assigns, serials)):
+            due = f"{due}T15:59:59.000Z" if due else ""
+            if bid not in request_dict.keys(): request_dict[bid] = {}
+            if lid not in request_dict[bid].keys(): request_dict[bid][lid] = []
+            request_dict[bid][lid].append({"name": n, "due": due, "assign": assign, "serial": serial})
+        created_cards = {}
+        for bid, lids in request_dict.items():
+            board = trello.get_board(bid)
+            for lid, cards in lids.items():
+                t_list = board.get_list(lid)
+                for card_dict in cards:
+                    created = await self.add_card(trello, t_list, card_dict)
+                    created_cards[card_dict["serial"]] = created
+        return created_cards
+
 
     def __getitem__(self, guild_id: Union[str, int]) -> TrelloClient:
         return self._clients.get(str(guild_id))

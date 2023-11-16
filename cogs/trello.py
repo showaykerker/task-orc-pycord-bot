@@ -241,7 +241,6 @@ class Trello(Cog):
             filtered_cards: FilteredCards,
             trello_id_to_discord_name: Optional[Dict[str, str]] = {},
             show_board=False) -> dc.Embed:
-        print(show_board)
         embed = dc.Embed(
             title=title,
             color=dc.Colour.lighter_grey()
@@ -251,7 +250,7 @@ class Trello(Cog):
             trello_id_to_discord_name = trello_id_to_discord_name,
             member_max_length = card_length-2)
         for card_dict in list_of_dict_cards:
-            card_link = f" [↗↗]({card_dict['url']}) " if card_dict["url"] else "—"*5
+            card_link = f" [↗↗](<{card_dict['url']}>) " if card_dict["url"] else "—"*5
             value = f'{random.choice(charater_emojis)} {card_dict["members"]}\n' if card_dict["members"] else ""
             if show_board:
                 value += f'{random.choice(board_emojis)} {card_dict["board"]}\n'
@@ -296,7 +295,7 @@ class Trello(Cog):
         board_list_data = await self.bot.trello.get_board_list_data(message.guild.id)
         assignments = tasks.get("task_assignment")
         filtered_cards = FilteredCards()
-        card_add_info = []
+        card_add_info = {"board_ids": [], "list_ids": [], "names": [], "dues": [], "assigns": []}
         for key, due_tasks in assignments.items():
             if key == np.inf: continue
             member_id = [TrelloDummyAssign(dn2ti.get(key)), ] if dn2ti.get(key) else []
@@ -323,7 +322,12 @@ class Trello(Cog):
                         title = task,
                         members = [key, ],
                         due = due))
-                    card_add_info.append((board_id, list_id, task, str(due), member_id))
+                    card_add_info["board_ids"].append(board_id)
+                    card_add_info["list_ids"].append(list_id)
+                    card_add_info["names"].append(task)
+                    card_add_info["dues"].append(due)
+                    card_add_info["assigns"].append(member_id)
+        card_add_info["serials"] = [i for i in range(len(card_add_info["names"]))]
 
         if filtered_cards:
             embed = self.get_embed_from_filtered_cards(
@@ -331,10 +335,19 @@ class Trello(Cog):
                 filtered_cards=filtered_cards,
                 show_board=True
             )
-            await message.reply(embed=embed)
+            sent_msg = await message.reply(embed=embed)
+            created_cards = await self.bot.trello.add_cards(trello, **card_add_info)
+            for i, field in enumerate(embed.fields):
+                card = created_cards.get(i)
+                if card:
+                    last_line = f'\n{"—"*5} [↗↗](<{card.short_url}>) {"—"*5}\n'
+                    field.name = field.name.replace(":jigsaw:", ":white_check_mark:")
+                else:
+                    last_line = f'\n{"—"*4} Create Failed {"—"*4}\n'
+                    field.name = field.name.replace(":jigsaw:", ":x:")
+                field.value = "\n".join(field.value.split("\n")[:-2]) + last_line
+            await sent_msg.edit(embed=embed)
 
-            for card_add in card_add_info:
-                await self.bot.trello.add_card(trello, *card_add)
 
         else:
             await message.reply("No cards to be created.")
