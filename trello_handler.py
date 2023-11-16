@@ -218,6 +218,8 @@ class TrelloHandler:
         #     f"inp: {inp}, board_id: {board_id}, list_id: {list_id}, name: {name}, due: {due}, assign: {assign}")
         trello = self._parse_input(inp)
         if trello is None: return
+        if due:
+            due = f"{due}T15:59:59.000Z"
         trello.get_board(board_id).get_list(list_id).add_card(
             name, desc=None, labels=None, due=due, source=None, position='top', assign=assign)
 

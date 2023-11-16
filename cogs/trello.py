@@ -296,6 +296,7 @@ class Trello(Cog):
         board_list_data = await self.bot.trello.get_board_list_data(message.guild.id)
         assignments = tasks.get("task_assignment")
         filtered_cards = FilteredCards()
+        card_add_info = []
         for key, due_tasks in assignments.items():
             if key == np.inf: continue
             member_id = [TrelloDummyAssign(dn2ti.get(key)), ] if dn2ti.get(key) else []
@@ -322,14 +323,8 @@ class Trello(Cog):
                         title = task,
                         members = [key, ],
                         due = due))
+                    card_add_info.append((board_id, list_id, task, str(due), member_id))
 
-                    await self.bot.trello.add_card(
-                        trello,
-                        board_id,
-                        list_id,
-                        task,
-                        str(due),
-                        member_id)
         if filtered_cards:
             embed = self.get_embed_from_filtered_cards(
                 title="要新增的卡片:",
@@ -337,6 +332,9 @@ class Trello(Cog):
                 show_board=True
             )
             await message.reply(embed=embed)
+
+            for card_add in card_add_info:
+                await self.bot.trello.add_card(trello, *card_add)
 
         else:
             await message.reply("No cards to be created.")
