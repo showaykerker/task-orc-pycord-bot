@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import math
@@ -36,8 +37,6 @@ from trello_handler import TrelloDummyAssign
 
 no_trello_error_msg = lambda ctx: emb.error(
     ctx, "No Trello configuration found. Use /configure_trello First.")
-
-
 
 def dict_to_ascii_table(id_to_name: dict) -> str:
     fields = ["TrelloID", "Name"]
@@ -283,11 +282,13 @@ class Trello(Cog):
         await ctx.send_modal(modal)
 
     async def on_message(self, message: discord.Message) -> None:
+
         if message.author.bot or not message.content.startswith("<@1163852103958155375>"):
             return
+
         msgs = message.clean_content.split("\n")[1:]
         tasks = task_parser.parse_tasks(msgs)
-        # print(json.dumps(tasks, indent=4, ensure_ascii=False))
+
         trello = await self.get_trello_instance(message.guild.id)
         if trello is None: return
 
@@ -297,6 +298,7 @@ class Trello(Cog):
         assignments = tasks.get("task_assignment")
         filtered_cards = FilteredCards()
         card_add_info = {"board_ids": [], "list_ids": [], "names": [], "dues": [], "assigns": []}
+
         for key, due_tasks in assignments.items():
             key = "" if key == np.inf else key
             if "everyone" in key:
@@ -308,25 +310,49 @@ class Trello(Cog):
                     due = ""
                 else:
                     due = datetime.datetime.strptime(due_str, "%Y/%m/%d").date()
+
+                # Handle assigned tasks
                 for task in tasks:
-                    for board_id, keywords in trello_settings.board_keywords.items():
-                        board_name = board_list_data.board_id_to_name[board_id]
-                        if board_id not in trello_settings.board_id_list_id_to_create_card.keys():
-                            emb.error(message, f"看板{board_name}沒有設定新增卡片的位置")
-                        if any([kw in task.lower() for kw in keywords.split(",")]):
-                            break
+
+                    # Keyword overwrite with ||Overwrite Patterns||
+                    keyword_overwrite = None
+                    pattern = r".*(\|\|(.*)\|\|) *$"
+                    match = re.match(pattern, task)
+                    if match:
+                        task = task.replace(match.group(1), "")
+                        keyword_overwrite = "default" if match.group(2) == "" else match.group(2)
+
+                    # Assign task to board
+                    assigned_board_id = None
+                    if keyword_overwrite:
+                        for board_id, keywords in trello_settings.board_keywords.items():
+                            if str(keyword_overwrite).lower() in keywords.split(","):
+                                assigned_board_id = board_id
                     else:
-                        board_id = trello_settings.default_board
-                        board_name = board_list_data.board_id_to_name[board_id]
-                    list_id = trello_settings.board_id_list_id_to_create_card[board_id]
+                        for board_id, keywords in trello_settings.board_keywords.items():
+                            if board_id not in trello_settings.board_id_list_id_to_create_card.keys():
+                                emb.error(
+                                    message,
+                                    f"看板{board_name}沒有設定新增卡片的位置，"\
+                                    "請使用`/set_trello_board_list_to_create`設定。")
+                            if any([kw in task.lower() for kw in keywords.split(",")]):
+                                    break
+
+                    assigned_board_id = trello_settings.default_board if assigned_board_id is None else assigned_board_id
+                    assigned_board_name = board_list_data.board_id_to_name[assigned_board_id]
+
+                    # Find list id to create card
+                    list_id = trello_settings.board_id_list_id_to_create_card[assigned_board_id]
                     list_name = board_list_data.list_id_to_name[list_id]
+
+                    # Create cards to be added
                     filtered_cards.plain_append(DateCard(
-                        board = board_name,
+                        board = assigned_board_name,
                         t_list = list_name,
                         title = task,
                         members = [key, ],
                         due = due))
-                    card_add_info["board_ids"].append(board_id)
+                    card_add_info["board_ids"].append(assigned_board_id)
                     card_add_info["list_ids"].append(list_id)
                     card_add_info["names"].append(task)
                     card_add_info["dues"].append(due)
@@ -341,6 +367,8 @@ class Trello(Cog):
             )
             sent_msg = await message.reply(embed=embed)
             created_cards = await self.bot.trello.add_cards(trello, **card_add_info)
+
+            # Replace the last line and name if added.
             for i, field in enumerate(embed.fields):
                 card = created_cards.get(i)
                 if card:
@@ -350,8 +378,8 @@ class Trello(Cog):
                     last_line = f'\n{"—"*3} Create Failed {"—"*3}\n'
                     field.name = field.name.replace(":jigsaw:", ":x:")
                 field.value = "\n".join(field.value.split("\n")[:-2]) + last_line
-            await sent_msg.edit(embed=embed)
 
+            await sent_msg.edit(embed=embed)
 
         else:
             await message.reply("No cards to be created.")
