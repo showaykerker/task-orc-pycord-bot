@@ -327,73 +327,9 @@ class Trello(Cog):
                 show_board=True
             )
             await message.reply(embed=embed)
-            #     add_card(
-            # self,
-            # inp: Union[str, int, TrelloClient],
-            # board_id: str,
-            # list_id: str,
-            # name: str,
-            # due: Optional[str],
-            # assign: Optional[List[TrelloDummyAssign]]=[]) -> None:
 
         else:
             await message.reply("No cards to be created.")
-
-        # await self.bot.trello.create_card(
-        #     trello,
-        #     message.guild.id,
-        #     message.channel.id,
-        #     message.clean_content)
-
-
-
-    # @dc.slash_command(name="assign_tasks")
-    # async def assign_tasks(self, ctx:ApplicationContext) -> None:
-    #     # modal = MyModal(title="Modal via Slash Command")
-    #     # await ctx.send_modal(modal)
-    #     pass
-
-    # Not used.
-    # @dc.slash_command(
-    #     name="get_trello_lists", description="Get all Trello Lists"
-    # )
-    # async def get_trello_lists(self, ctx: ApplicationContext) -> None:
-    #     trello = await self.get_trello_instance(ctx)
-    #     if trello is None: return
-
-    #     all_boards = trello.list_boards()
-    #     embed = dc.Embed(
-    #         title = "Trello上的看板:",
-    #         color=dc.Colour.fuchsia()
-    #     )
-    #     for board in all_boards:
-    #         embed.add_field(name=board.name, value="", inline=False)
-    #         for lst in board.list_lists():
-    #             embed.add_field(name=lst.name, value=lst.id, inline=True)
-    #     await ctx.respond(embed=embed)
-
-    # To be modified
-    # @dc.slash_command(
-    #     name="get_trello_cards", description="Get all Trello Cards"
-    # )
-    # async def get_trello_cards(self, ctx: ApplicationContext) -> None:
-    #     trello = await self.get_trello_instance(ctx)
-    #     if trello is None: return
-
-    #     await ctx.defer()
-
-    #     all_boards = trello.list_boards()
-    #     embed = dc.Embed(
-    #         title = "Trello上的看板:",
-    #         color=dc.Colour.fuchsia()
-    #     )
-    #     for board in all_boards:
-    #         print(f"board {board}")
-    #         embed.add_field(name=board.name, value="", inline=False)
-    #         for card in board.all_cards():
-    #             print(f"\tcard {card}")
-    #             embed.add_field(name=card.name, value=card.description, inline=True)
-    #     await ctx.followup.send(embed=embed)
 
 
 def setup(bot: Bot):
