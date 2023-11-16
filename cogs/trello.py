@@ -298,7 +298,7 @@ class Trello(Cog):
         filtered_cards = FilteredCards()
         card_add_info = {"board_ids": [], "list_ids": [], "names": [], "dues": [], "assigns": []}
         for key, due_tasks in assignments.items():
-            if key == np.inf: continue
+            key = "" if key == np.inf else key
             if "everyone" in key:
                 member_id = [TrelloDummyAssign(tid) for tid in dn2ti.values()]
             else:

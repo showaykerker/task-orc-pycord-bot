@@ -61,7 +61,7 @@ def parse_tasks(msgs):
     structured = {"task_assignment": {np.inf: defaultdict(list, {})}, "schedule": defaultdict(list, {})}
     current_asignee = None
     current_schedule = None
-    interested_dict = None
+    interested_dict = structured["task_assignment"][np.inf]
     last_line = None
     date_overwrite = None
     msgs = msgs if isinstance(msgs, list) else msgs.split("\n")
@@ -87,7 +87,8 @@ def parse_tasks(msgs):
             interested_dict[d.strftime(format="%Y/%m/%d")].append(" ".join(msg.split(" ")[1:]))
         elif msg in ["", "\n", None]:  # handle spaces
             pass
-        elif interested_dict is not None:
+        else:
             interested_dict[np.inf].append(msg)
         last_line = msg
+    print(json.dumps(structured, indent=4, ensure_ascii=False))
     return structured
