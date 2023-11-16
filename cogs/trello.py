@@ -257,7 +257,7 @@ class Trello(Cog):
                 value += f'{random.choice(board_emojis)} {card_dict["board"]}\n'
             value += f'{random.choice(due_emojis)} {card_dict["due"]} \n' if card_dict["due"] else ""
             value += "\n" if value == "" else ""
-            value += f'{"—"*5}{card_link}{"—"*5}\n'
+            value += f'{"—"*4}{card_link}{"—"*4}\n'
             embed.add_field(
                 name=f':jigsaw:{card_dict["title"]}',
                 value=value,
@@ -344,10 +344,10 @@ class Trello(Cog):
             for i, field in enumerate(embed.fields):
                 card = created_cards.get(i)
                 if card:
-                    last_line = f'\n{"—"*5} [↗↗](<{card.short_url}>) {"—"*5}\n'
+                    last_line = f'\n{"—"*4} [↗↗](<{card.short_url}>) {"—"*4}\n'
                     field.name = field.name.replace(":jigsaw:", ":white_check_mark:")
                 else:
-                    last_line = f'\n{"—"*4} Create Failed {"—"*4}\n'
+                    last_line = f'\n{"—"*3} Create Failed {"—"*3}\n'
                     field.name = field.name.replace(":jigsaw:", ":x:")
                 field.value = "\n".join(field.value.split("\n")[:-2]) + last_line
             await sent_msg.edit(embed=embed)
