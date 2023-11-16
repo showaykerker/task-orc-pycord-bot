@@ -1,4 +1,5 @@
 import os
+import re
 
 import asyncio
 import dotenv
@@ -20,16 +21,30 @@ class TaskOrc(ezcord.Bot):
         self.load_cogs("cogs")
         self.db = TaskOrcDB()
         self.trello = TrelloHandler()
+        self.add_listener(self.on_events_forward, "on_message")
 
     @watch(path="cogs", preload=True, debug=True)
     async def on_ready(self):
         await self.db.setup()
         print("Bot ready.")
 
+    async def on_events_forward(self, message):
+        # Forward message from other robot
+        if message.author.id == self.user.id or\
+                message.channel.name != "events" or\
+                not message.author.bot:
+            return
 
-async def main():
-    client = TaskOrc()
-    await client.start(str(os.getenv("TOKEN")))
+        pattern = re.compile(r".* \[(.*)\].*")
+        match = pattern.match(message.content)
+        if match is None: return
 
-if __name__ == "__main__":
-    asyncio.run(main())
+        match_targets = match.group(1).split(" ")
+        channels = await message.guild.fetch_channels()
+        for channel in channels:
+            if channel.name in match_targets:
+                await channel.send(message.content)
+                break
+
+client = TaskOrc()
+client.run(str(os.getenv("TOKEN")))
