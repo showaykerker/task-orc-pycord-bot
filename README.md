@@ -19,8 +19,10 @@
 - [x] ~~UI to select Trello boards/ lists to get cards from.~~ (23/11/13)
 - [x] Add UI to assign Trello board keywords.
 - [x] ~~Use rule-based method to handle task assiging messages and turn it into a Trello cards.~~ (23/11/14)
+- [ ] Overwrite assigned trello boards when assigning tasks.
 - [ ] Refactor trello cogs.
 - [ ] Figure out a way to show check lists in cards.
 - [ ] Handle Trello ID congifuring if members > 5.
 - [ ] Handle Trello board keywords congifuring if board > 5.
 - [ ] Isolate configure command to another command group that can only be used by admins.
+- [ ] Document.
