@@ -14,6 +14,7 @@ from discord import ApplicationContext
 from discord import Option
 from discord import InteractionResponse
 from discord.commands import SlashCommandGroup
+from discord.commands import guild_only
 from discord.ext import commands
 from discord.ext.pages import Paginator, Page
 from ezcord.internal.dc import discord as dc
@@ -35,6 +36,7 @@ from trello_handler import TrelloDummyAssign
 
 no_trello_error_msg = lambda ctx: emb.error(
     ctx, "No Trello configuration found. Use /configure_trello First.")
+
 
 
 def dict_to_ascii_table(id_to_name: dict) -> str:
@@ -92,6 +94,7 @@ class Trello(Cog):
     @dc.slash_command(
         name="configure_trello", description="Set trello key and token"
     )
+    @guild_only()
     async def configure_trello(
             self,
             ctx: ApplicationContext,
@@ -130,6 +133,7 @@ class Trello(Cog):
     @dc.slash_command(
         name="set_trello_list_to_trace"
     )
+    @guild_only()
     async def set_trello_list_to_trace(self, ctx: ApplicationContext):
         await ctx.defer()
         trello = await self.get_trello_instance(ctx)
@@ -142,6 +146,7 @@ class Trello(Cog):
         await ctx.followup.send("用下拉選單設定追蹤的看板", view=view, embed=view.embed)
 
     @dc.slash_command(name="set_trello_board_list_to_create")
+    @guild_only()
     async def set_trello_board_list_to_create_card(self, ctx: ApplicationContext):
         await ctx.defer()
         trello = await self.get_trello_instance(ctx)
@@ -157,6 +162,7 @@ class Trello(Cog):
     @tgetters.command(
         name="boards", description="Get all boards"
     )
+    @guild_only()
     async def boards(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
@@ -180,6 +186,7 @@ class Trello(Cog):
     @tgetters.command(
         name="members", description="Get all Trello Users Info"
     )
+    @guild_only()
     async def get_trello_members(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
@@ -196,6 +203,7 @@ class Trello(Cog):
     @tgetters.command(
         name="undone", description="Get all undone cards"
     )
+    @guild_only()
     async def get_trello_undone(
             self,
             ctx: ApplicationContext,
@@ -258,10 +266,12 @@ class Trello(Cog):
 
 
     @tgetters.command(name="all_undone", description="Get all undone cards")
+    @guild_only()
     async def get_all_trello_undone(self, ctx: ApplicationContext) -> None:
         await self.get_trello_undone(ctx, user="all")
 
     @dc.slash_command(name="set_board_keywords")
+    @guild_only()
     async def set_board_keywords(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return
