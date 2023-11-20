@@ -1,17 +1,26 @@
+import discord
 import os
 import sys
-from typing import Union, List, Optional, Dict, Tuple
-import discord
-from discord import ButtonStyle
+
 from discord import ApplicationContext
-from discord.ui import View, Select, Button
+from discord import ButtonStyle
 from discord import SelectOption
+from discord.ui import Button
+from discord.ui import Select
+from discord.ui import View
 from ezcord.internal.dc import discord as dc
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from trello_handler import TrelloHandler, BoardListData
-from database_handler import TaskOrcDB, TrelloSettings
+from database_handler import TaskOrcDB
+from database_handler import TrelloSettings
+from trello_handler import BoardListData
+from trello_handler import TrelloHandler
 
 
 class SetTrelloBoardListToCreateCardView(View):

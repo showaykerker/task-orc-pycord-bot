@@ -1,10 +1,13 @@
 import copy
 import discord
+
 from discord import ButtonStyle
-from discord.ui import View, Select, Button
+from discord.ui import Button
+from discord.ui import Select
+from discord.ui import View
 from ezcord.internal.dc import discord as dc
-from table2ascii import table2ascii as t2a
 from table2ascii import PresetStyle
+from table2ascii import table2ascii as t2a
 
 def dict_to_ascii_table(discord_name_to_trello_name: dict) -> str:
     fields = ["Discord Name", "Trello Name"]
