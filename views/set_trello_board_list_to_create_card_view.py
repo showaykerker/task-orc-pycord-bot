@@ -14,7 +14,7 @@ from trello_handler import TrelloHandler, BoardListData
 from database_handler import TaskOrcDB, TrelloSettings
 
 
-class SetTrelloBoardListToCreateCard(View):
+class SetTrelloBoardListToCreateCardView(View):
     def __init__(
             self,
             ctx: ApplicationContext,

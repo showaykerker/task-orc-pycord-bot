@@ -28,7 +28,7 @@ from table2ascii import Merge
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from views import SetTrelloUserIdView, SetTrelloTargetListView, SetTrelloBoardListToCreateCard
+from views import SetTrelloUserIdView, SetTrelloTargetListView, SetTrelloBoardListToCreateCardView
 from constant_values import charater_emojis, due_emojis, board_emojis
 from constant_values import admin_roles
 from modals import BoardKeywordModal
@@ -159,7 +159,7 @@ class Trello(Cog):
         board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
         trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
 
-        view = SetTrelloBoardListToCreateCard(ctx, board_list_data, trello_settings, self.bot.db)
+        view = SetTrelloBoardListToCreateCardView(ctx, board_list_data, trello_settings, self.bot.db)
         await ctx.followup.send("用下拉選單設定新增卡片的位置", view=view, embed=view.embed)
 
 
