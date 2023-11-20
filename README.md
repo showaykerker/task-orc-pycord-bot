@@ -24,7 +24,7 @@ The mention command listens for when you mention the bot in Discord in any chann
 * **Optionally mention a member**: a line contains only member mentioned indicates that following lines of tasks are assigned to the member until another member is mentioned.
 	* If everyone was mentioned, the following lines of tasks will be assigned to everyone.
 * **Task Assignment**: Each line that contains no mentions will be a task.
-	* **Due Date**: A task can be assigned with a due date or not. If not, the card will be created without due date. 
+	* **Due Date**: A task can be assigned with a due date or not. If not, the card will be created without due date.
 		* Here are compatible formats of date:
 			1. a 4-digit MMDD number, which will be interpreted as the date of the nearest future, e.g. if today is 2021-12-25, `0128` will be interpreted as `2022-01-28`.
 			2. a 6-digit YYMMDD number, which will be interpreted as the exact date.
@@ -66,15 +66,15 @@ See more usage examples [here](./task_assignment_usages.md).
 - [x] ~~Use rule-based method to handle task assiging messages and turn it into a Trello cards.~~ (23/11/14)
 - [x] ~~Overwrite assigned trello boards when assigning tasks.~~ (23/11/17)
 - [X] ~~Handle Trello ID configuring if members > 5.~~(23/11/21)
+- [ ] Refactor configuration process. (In Progress)
+- [ ] Isolate configure command to another command group that can only be used by admins.
+- [ ] Handle Trello board keywords configuring if board > 5.
 - [ ] Time zone issue.
 - [ ] Sort out weekday assignment issue.
 - [ ] Add support for more time-assigning formats.
-- [ ] Add support to assign task with a time.
+- [ ] Add support to assign task with a time rather than only date.
 - [ ] Figure out a way to show check lists in cards.
-- [ ] Handle Trello board keywords configuring if board > 5.
-- [ ] Document.
+- [ ] Document with images.
 - [ ] Make Trello key and token generation guide.
 - [ ] Assign tasks to multiple, but not all, members.
 - [ ] Refactor trello cogs.
-- [ ] Refactor configuration process.
-- [ ] Isolate configure command to another command group that can only be used by admins.
