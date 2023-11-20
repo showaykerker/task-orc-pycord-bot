@@ -1,6 +1,10 @@
 import copy
 import discord
 
+from typing import Callable
+from typing import Dict
+
+from discord import ApplicationContext
 from discord import ButtonStyle
 from discord.ui import Button
 from discord.ui import Select
@@ -28,11 +32,11 @@ class SetTrelloUserIdView(View):
     MAX_PER_PAGE = 4
     def __init__(
             self,
-            ctx,
-            members_in_guild_to_be_assigned,
-            trello_id_to_name_dict,
-            is_set_callback,
-            discord_name_to_trello_name_dict={}):
+            ctx: ApplicationContext,
+            members_in_guild_to_be_assigned: Dict[str, str],  # {discord_name: discord_id}
+            trello_id_to_name_dict: Dict[str, str],  # {trello_id: trello_name}
+            is_set_callback: Callable[str, str],  # func(discord_id, trello_id) update trello_id in database
+            discord_name_to_trello_name_dict: Dict[str, str]={}) -> None:  # {discord_name: trello_name}
         super().__init__()
         self.to_be_assigned = copy.deepcopy(members_in_guild_to_be_assigned)
         self.candidate = copy.deepcopy(members_in_guild_to_be_assigned)
@@ -52,20 +56,26 @@ class SetTrelloUserIdView(View):
         )
         self.update_view()
 
+
     def update_view(self):
         if len(self.to_be_assigned) == 0: return
 
         self.clear_items()
 
         keys_to_be_remove = []
-        for i, (dc_name, dc_id) in enumerate(self.to_be_assigned.items()):
+        for i, (discord_name, discord_id) in enumerate(self.to_be_assigned.items()):
             select = Select(
-                placeholder=f"{dc_name}",
-                options=[discord.SelectOption(label=name, value=member_id) for member_id, name in self.options.items()]
+                placeholder=f"{discord_name}",
+                options=[
+                    discord.SelectOption(
+                        label=name,
+                        value=member_id
+                    ) for member_id, name in self.options.items()
+                ]
             )
-            select.custom_id = dc_name
+            select.custom_id = discord_name
             self.add_item(select)
-            keys_to_be_remove.append(dc_name)
+            keys_to_be_remove.append(discord_name)
             if i == self.MAX_PER_PAGE - 1:
                 break
 
