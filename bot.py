@@ -2,9 +2,10 @@ import os
 import re
 
 import asyncio
-import dotenv
 import discord
+import dotenv
 import ezcord
+
 from cogwatch import watch
 
 from database_handler import TaskOrcDB

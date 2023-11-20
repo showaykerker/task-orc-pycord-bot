@@ -1,6 +1,7 @@
 from discord import ApplicationContext
+from ezcord import Bot
+from ezcord import Cog
 from ezcord.internal.dc import discord as dc
-from ezcord import Bot, Cog
 
 
 class Template(Cog, hidden=True):

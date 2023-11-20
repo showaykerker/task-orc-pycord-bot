@@ -1,7 +1,8 @@
-import os
-import sys
 import json
+import os
 import random
+import sys
+
 from itertools import cycle
 
 from discord import ApplicationContext
@@ -9,11 +10,12 @@ from discord import Option
 from discord.commands import SlashCommandGroup
 from discord.commands import guild_only
 from discord.ext.commands import has_any_role
+from ezcord import Bot
+from ezcord import Cog
 from ezcord.internal.dc import discord as dc
-from ezcord import Bot, Cog
 from pandas import DataFrame as df
-from table2ascii import table2ascii as t2a
 from table2ascii import PresetStyle
+from table2ascii import table2ascii as t2a
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

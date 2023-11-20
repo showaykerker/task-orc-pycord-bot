@@ -1,13 +1,19 @@
-from typing import Union, List, Optional, Dict, Tuple
 import datetime
-import math
 import json
+import math
+
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import numpy as np
+
 from trello import TrelloClient
 from trello.board import Board
-from trello.trellolist import List as TrelloList
 from trello.card import Card
+from trello.trellolist import List as TrelloList
 
 class BoardListData:
     def __init__(self):

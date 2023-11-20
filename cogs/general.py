@@ -1,10 +1,13 @@
 import inspect
 import random
+
 from itertools import cycle
 
 from discord import ApplicationContext
+from ezcord import Bot
+from ezcord import Cog
+from ezcord import emb
 from ezcord.internal.dc import discord as dc
-from ezcord import Bot, Cog, emb
 
 
 class General(Cog):

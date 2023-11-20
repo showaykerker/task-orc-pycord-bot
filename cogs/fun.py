@@ -2,10 +2,13 @@ import random
 
 import aiohttp
 import discord
-from discord.ext import commands
+
 from discord import ApplicationContext
+from discord.ext import commands
+from ezcord import Bot
+from ezcord import Cog
+from ezcord import emb
 from ezcord.internal.dc import discord as dc
-from ezcord import Bot, Cog, emb
 
 class Choice(discord.ui.View):
     def __init__(self) -> None:

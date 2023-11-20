@@ -1,8 +1,9 @@
-import os
+import argparse
 import base64
 import dotenv
+import os
 import questionary
-import argparse
+
 from cryptography.fernet import Fernet
 
 

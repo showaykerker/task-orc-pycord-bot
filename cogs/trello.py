@@ -1,41 +1,53 @@
-import os
-import re
-import sys
+import datetime
 import json
 import math
+import os
 import random
-from typing import List, Optional, Union, Dict
-from itertools import cycle
-import datetime
+import re
+import sys
 
-import numpy as np
-from wcwidth import wcswidth
+from itertools import cycle
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
+
 import discord
+import numpy as np
+
 from discord import ApplicationContext
-from discord import Option
 from discord import InteractionResponse
+from discord import Option
 from discord.commands import SlashCommandGroup
 from discord.commands import guild_only
-from discord.ext.commands import has_any_role
 from discord.ext import commands
-from discord.ext.pages import Paginator, Page
+from discord.ext.commands import has_any_role
+from discord.ext.pages import Page
+from discord.ext.pages import Paginator
+from ezcord import Bot
+from ezcord import Cog
+from ezcord import emb
 from ezcord.internal.dc import discord as dc
-from ezcord import Bot, Cog, emb
-from trello import TrelloClient
-from table2ascii import table2ascii as t2a
-from table2ascii import PresetStyle
 from table2ascii import Merge
+from table2ascii import PresetStyle
+from table2ascii import table2ascii as t2a
+from trello import TrelloClient
+from wcwidth import wcswidth
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from views import SetTrelloUserIdView, SetTrelloTargetListView, SetTrelloBoardListToCreateCardView
-from constant_values import charater_emojis, due_emojis, board_emojis
 from constant_values import admin_roles
+from constant_values import board_emojis
+from constant_values import charater_emojis
+from constant_values import due_emojis
 from modals import BoardKeywordModal
-from utils import task_parser
 from trello_handler import DateCard
 from trello_handler import FilteredCards
 from trello_handler import TrelloDummyAssign
+from utils import task_parser
+from views import SetTrelloBoardListToCreateCardView
+from views import SetTrelloTargetListView
+from views import SetTrelloUserIdView
 
 no_trello_error_msg = lambda ctx: emb.error(
     ctx, "No Trello configuration found. Use /configure_trello First.")

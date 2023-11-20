@@ -1,11 +1,17 @@
-from typing import Optional, Tuple, Union, Dict, List
 import json
 import pandas as pd
 import sqlite3
 
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
+
 from discord import ApplicationContext
+from encryption import decrypt
+from encryption import encrypt
 from ezcord.sql import DBHandler
-from encryption import encrypt, decrypt
 
 class MemberData:
     def __init__(self, guild_id: str, name: str, discord_id: str, trello_id: Optional[str] = "") -> None:
