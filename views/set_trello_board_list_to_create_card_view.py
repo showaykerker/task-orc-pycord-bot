@@ -49,8 +49,7 @@ class SetTrelloBoardListToCreateCardView(View):
                 lid = board_list_data.list_name_to_id[ln]
                 options.append(SelectOption(
                     label = ln,
-                    value = lid,
-                    default = ln == default_ln
+                    value = lid
                 ))
             select = Select(
                 placeholder = bn,
