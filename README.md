@@ -65,12 +65,12 @@ See more usage examples [here](./task_assignment_usages.md).
 - [x] Add UI to assign Trello board keywords.
 - [x] ~~Use rule-based method to handle task assiging messages and turn it into a Trello cards.~~ (23/11/14)
 - [x] ~~Overwrite assigned trello boards when assigning tasks.~~ (23/11/17)
+- [X] ~~Handle Trello ID configuring if members > 5.~~(23/11/21)
 - [ ] Time zone issue.
 - [ ] Sort out weekday assignment issue.
 - [ ] Add support for more time-assigning formats.
 - [ ] Add support to assign task with a time.
 - [ ] Figure out a way to show check lists in cards.
-- [ ] Handle Trello ID configuring if members > 5.
 - [ ] Handle Trello board keywords configuring if board > 5.
 - [ ] Document.
 - [ ] Make Trello key and token generation guide.
