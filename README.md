@@ -9,7 +9,8 @@
 * `/set_trello_board_list_to_create`
 
 ### Mentions
-#### Trello
+#### Forwarding Messages
+#### Task Assignment
 ##### Description
 The mention command listens for when you mention the bot in Discord in any channel. When you do, it will look at the message you send and try to create Trello cards from it.
 
@@ -68,10 +69,12 @@ See more usage examples [here](./task_assignment_usages.md).
 - [ ] Sort out weekday assignment issue.
 - [ ] Add support for more time-assigning formats.
 - [ ] Add support to assign task with a time.
-- [ ] Refactor trello cogs.
 - [ ] Figure out a way to show check lists in cards.
-- [ ] Handle Trello ID congifuring if members > 5.
-- [ ] Handle Trello board keywords congifuring if board > 5.
-- [ ] Isolate configure command to another command group that can only be used by admins.
+- [ ] Handle Trello ID configuring if members > 5.
+- [ ] Handle Trello board keywords configuring if board > 5.
 - [ ] Document.
 - [ ] Make Trello key and token generation guide.
+- [ ] Assign tasks to multiple, but not all, members.
+- [ ] Refactor trello cogs.
+- [ ] Refactor configuration process.
+- [ ] Isolate configure command to another command group that can only be used by admins.
