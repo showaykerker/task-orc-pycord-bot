@@ -16,6 +16,7 @@ from discord import Option
 from discord import InteractionResponse
 from discord.commands import SlashCommandGroup
 from discord.commands import guild_only
+from discord.ext.commands import has_any_role
 from discord.ext import commands
 from discord.ext.pages import Paginator, Page
 from ezcord.internal.dc import discord as dc
@@ -29,6 +30,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from views import SetTrelloUserIdView, SetTrelloTargetListView, SetTrelloBoardListToCreateCard
 from constant_values import charater_emojis, due_emojis, board_emojis
+from constant_values import admin_roles
 from modals import BoardKeywordModal
 from utils import task_parser
 from trello_handler import DateCard
@@ -94,6 +96,7 @@ class Trello(Cog):
         name="configure_trello", description="Set trello key and token"
     )
     @guild_only()
+    @has_any_role(*admin_roles)
     async def configure_trello(
             self,
             ctx: ApplicationContext,
@@ -133,6 +136,7 @@ class Trello(Cog):
         name="set_trello_list_to_trace"
     )
     @guild_only()
+    @has_any_role(*admin_roles)
     async def set_trello_list_to_trace(self, ctx: ApplicationContext):
         await ctx.defer()
         trello = await self.get_trello_instance(ctx)
@@ -146,6 +150,7 @@ class Trello(Cog):
 
     @dc.slash_command(name="set_trello_board_list_to_create")
     @guild_only()
+    @has_any_role(*admin_roles)
     async def set_trello_board_list_to_create_card(self, ctx: ApplicationContext):
         await ctx.defer()
         trello = await self.get_trello_instance(ctx)
@@ -271,6 +276,7 @@ class Trello(Cog):
 
     @dc.slash_command(name="set_board_keywords")
     @guild_only()
+    @has_any_role(*admin_roles)
     async def set_board_keywords(self, ctx: ApplicationContext) -> None:
         trello = await self.get_trello_instance(ctx)
         if trello is None: return

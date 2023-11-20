@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import random
 from itertools import cycle
@@ -7,11 +8,16 @@ from discord import ApplicationContext
 from discord import Option
 from discord.commands import SlashCommandGroup
 from discord.commands import guild_only
+from discord.ext.commands import has_any_role
 from ezcord.internal.dc import discord as dc
 from ezcord import Bot, Cog
 from pandas import DataFrame as df
 from table2ascii import table2ascii as t2a
 from table2ascii import PresetStyle
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from constant_values import admin_roles
 
 
 def df_to_ascii_table(df:df) -> str:
@@ -47,6 +53,7 @@ class Database(Cog):
         name="members", description="Get member data from database.",
     )
     @guild_only()
+    @has_any_role(*admin_roles)
     async def members(self, ctx: ApplicationContext) -> None:
         await self._get_members(ctx, f"{ctx.guild} 的成員們")
 
@@ -59,6 +66,7 @@ class Database(Cog):
         name="configure_guild_members", description="Fetch member data to database.",
     )
     @guild_only()
+    @has_any_role(*admin_roles)
     async def configure_guild_members(self, ctx: ApplicationContext) -> None:
         await self.bot.db.configure_guild_members(ctx)
         await self._get_members(ctx, "以下的成員已經成功加到資料庫中。")
