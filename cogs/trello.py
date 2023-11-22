@@ -64,7 +64,7 @@ def dict_to_ascii_table(id_to_name: dict) -> str:
         style = PresetStyle.simple,
         cell_padding=1
     )
-    return f"```\n{table}\n```"
+    return f"```\n{table}\n```"[:1024]
 
 class Trello(Cog):
 

@@ -41,7 +41,7 @@ def df_to_ascii_table(df:df) -> str:
         cell_padding=0,
         use_wcwidth=True,
     )
-    return f"```\n{table}\n```"
+    return f"```\n{table}\n```"[:1024]
 
 class Database(Cog):
     def __init__(self, bot: Bot):

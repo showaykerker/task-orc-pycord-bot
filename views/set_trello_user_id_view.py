@@ -26,7 +26,7 @@ def dict_to_ascii_table(discord_name_to_trello_name: dict) -> str:
         cell_padding=1,
         use_wcwidth=True,
     )
-    return f"```\n{table}\n```"
+    return f"```\n{table}\n```"[:1024]
 
 class SetTrelloUserIdView(View):
     MAX_PER_PAGE = 4
