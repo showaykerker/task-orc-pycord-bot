@@ -31,6 +31,7 @@ class SetTrelloTargetListView(View):
             trello_settings: TrelloSettings,
             data: TaskOrcDB):
         super().__init__()
+        self.prefix = "set_trello_intersted_lists_view_"
         self.ctx = ctx
         self.data = data
 
@@ -59,7 +60,7 @@ class SetTrelloTargetListView(View):
             options = options,
             min_values = 0,
             max_values = len(self.board_list_data),
-            custom_id = "select_target"
+            custom_id = f"{self.prefix}select_target"
         )
 
         self.add_item(select)
@@ -72,17 +73,20 @@ class SetTrelloTargetListView(View):
             set(self.board_list_data.list_name_to_id.keys()) -\
             set(self.trello_settings.list_name_not_to_trace))
 
-    async def interaction_check(self, interaction):
-        if interaction.custom_id == "select_target":
+    async def interaction_check(self, interaction, from_paginator=False):
+        if interaction.custom_id.endswith("select_target"):
             await self.on_select(interaction)
             self.disable_all_items()
             await self.data.set_trello_traced_list_name_not_to_trace(
                 self.ctx.guild_id,
                 self.trello_settings.list_name_not_to_trace)
             self.embed.color=dc.Colour.green()
-            await interaction.response.edit_message(
-                content=f"Traced List Set.",
-                view=self, embed=self.embed)
+            if not from_paginator:
+                await interaction.response.edit_message(
+                    content=f"Traced List Set.",
+                    view=self, embed=self.embed)
+            else:
+                return self.embed
 
     def set_visualization(self, chosen_list_names: List[str]):
         if self.embed.fields:

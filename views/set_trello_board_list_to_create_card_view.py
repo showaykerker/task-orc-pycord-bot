@@ -50,6 +50,7 @@ class SetTrelloBoardListToCreateCardView(View):
             trello_settings: TrelloSettings,
             data: TaskOrcDB):
         super().__init__()
+        self.prefix = "set_trello_board_list_to_create_card_view_"
         self.ctx = ctx
         self.board_list_data = board_list_data
         self.trello_settings = trello_settings
@@ -76,12 +77,12 @@ class SetTrelloBoardListToCreateCardView(View):
 
         self.get_next_batch_button = Button(
             label="設定下一批！",
-            custom_id="get_next_batch_button",
+            custom_id=f"{self.prefix}get_next_batch_button",
             style=ButtonStyle.secondary
         )
         self.is_set_button = Button(
             label="完成！",
-            custom_id="is_set_button",
+            custom_id=f"{self.prefix}is_set_button",
             style=ButtonStyle.primary
         )
 
@@ -112,7 +113,7 @@ class SetTrelloBoardListToCreateCardView(View):
             select = Select(
                 placeholder = board_name,
                 options = options,
-                custom_id = board_id,
+                custom_id = f"{self.prefix}{board_id}",
             )
 
             self.add_item(select)
@@ -143,7 +144,7 @@ class SetTrelloBoardListToCreateCardView(View):
             value=dict_to_ascii_table(board_name_to_list_name),
             inline=False)
 
-    async def interaction_check(self, interaction):
+    async def interaction_check(self, interaction, from_paginator=False):
         if not interaction.custom_id.endswith("button"):
             await self.on_select(interaction)
             return True
@@ -152,21 +153,23 @@ class SetTrelloBoardListToCreateCardView(View):
                 self.ctx.guild_id,
                 self.trello_settings.board_id_list_id_to_create_card)
             self.set_embed()
-            if interaction.custom_id == "is_set_button" or\
+            if interaction.custom_id.endswith("is_set_button") or\
                     len(self.all_boards_to_be_set) == 0:
                 self.disable_all_items()
                 self.embed.color = dc.Colour.green()
-                await interaction.response.edit_message(
-                    content=f"完成設定！",
-                    view=self, embed=self.embed)
+                if not from_paginator:
+                    await interaction.response.edit_message(
+                        content=f"完成設定！",
+                        view=self, embed=self.embed)
             else:
                 self.update_view()
-                await interaction.response.edit_message(
-                    view=self, embed=self.embed)
+                if not from_paginator:
+                    await interaction.response.edit_message(
+                        view=self, embed=self.embed)
 
     async def on_select(self, interaction):
         if interaction.data.get("values"):
-            bid = interaction.data["custom_id"]
+            bid = interaction.data["custom_id"].replace(self.prefix, "")
             lid = interaction.data["values"][0]
             self.trello_settings.board_id_list_id_to_create_card[bid] = lid
         self.set_embed()
