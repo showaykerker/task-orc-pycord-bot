@@ -39,7 +39,7 @@ def dict_to_ascii_table(board_name_to_list_name: Dict[str, str]) -> str:
         cell_padding=1,
         use_wcwidth=True,
     )
-    return f"```\n{table}\n```"
+    return f"```\n{table}\n```"[:1024]
 
 class SetTrelloBoardListToCreateCardView(View):
     MAX_PER_PAGE = 4
@@ -104,7 +104,6 @@ class SetTrelloBoardListToCreateCardView(View):
             else:
                 default_list_name = ""
             for list_name in list_names:
-                if list_name in self.trello_settings.list_name_not_to_trace: continue
                 list_id = self.board_list_data.list_name_to_id[list_name]
                 options.append(SelectOption(
                     label = list_name,
@@ -115,6 +114,7 @@ class SetTrelloBoardListToCreateCardView(View):
                 options = options,
                 custom_id = board_id,
             )
+
             self.add_item(select)
             keys_to_be_remove.append(board_name)
             if i == self.MAX_PER_PAGE - 1:
