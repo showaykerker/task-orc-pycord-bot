@@ -3,10 +3,8 @@
 ## Features
 ### Slash Commands
 #### Trello
-
 * `/trello get undone [me/all]`
-* `/set_trello_list_to_trace`
-* `/set_trello_board_list_to_create`
+
 
 ### Mentions
 #### Forwarding Messages
@@ -16,10 +14,10 @@ The mention command listens for when you mention the bot in Discord in any chann
 
 ##### Rules
 * **Before Assigning Tasks**:
-	* Set the Trello with command `/configure_trello`. A Trello key and Trello token must be prepared. You can generate them [here](https://developer.atlassian.com/cloud/trello/).
-		* You will then need to manually assign each Trello member to the guild's member through a select menu.
-	* The task will be automatically assigned to a trello board by comparing keywords in the message with keywords set in the bot. If no keywords are matched, the task will be assigned to the default board set in the bot. Use the command `/set_board_keyword` to set keywords for a board.
-	* In each board, a list should be set to be the entrance of tasks created by the bot. Use the command `/set_trello_board_list_to_create` to set the entrance list.
+	* Set the Trello with command `/configure trello key_token`. A Trello key and Trello token must be provided. You can generate them [here](https://developer.atlassian.com/cloud/trello/).
+	* Manually assign each Trello member to the guild's member through a select menu with command `/configure trello member`.
+	* The task will be automatically assigned to a trello board by comparing keywords in the message with keywords set in the bot. If no keywords are matched, the task will be assigned to the default board set in the bot. Use the command `/configure trello board_keywords` to set keywords for a board.
+	* In each board, a list should be set to be the entrance of tasks created by the bot. Use the command `/configure trello board_entry` to set the entrance list.
 * **Mention the bot**: Always mention the bot at the first line then go to the next line.
 * **Optionally mention a member**: a line contains only member mentioned indicates that following lines of tasks are assigned to the member until another member is mentioned.
 	* If everyone was mentioned, the following lines of tasks will be assigned to everyone.

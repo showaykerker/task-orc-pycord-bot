@@ -3,11 +3,11 @@
 ## 超Easy分派指南 😎✨
 
 * 在開始任務之前：
-	1. 快速設定 Trello，只需輸入 `/configure_trello` 指令。別忘了先準備好 Trello 密鑰和權杖，點擊[這裡](https://developer.atlassian.com/cloud/trello/)就對了！
-	2. 接著，透過超方便的選單，手動將 Trello 成員和公會成員一一對應。(這個過程會緊跟在第一步後面)
-	3. 你可能會只想追蹤 Trello 上某些清單包含的卡片，可以透過 `/set_trello_list_to_trace` 來選擇。（也可以不要，那就會跑去預設的看板）
-	4. Trello 空間中可能會有很多看板，每個看板要設定一個新增卡片的時候要新增到上面的Trello清單，通常是「待完成」之類的。這可以透過 `/set_trello_board_list_to_create` 輕鬆設定！
-	5. 分配任務後，任務獸人會自動比對關鍵字分配到對應Trello 看板上，如果找不到合適的關鍵字，任務就會跑去預設的板子。用 `/set_board_keyword` 指令可以為板子設定特定關鍵字。
+	1. 快速設定 Trello，只需輸入 `/configure trello key_token` 指令。別忘了先準備好 Trello 密鑰和權杖，點擊[這裡](https://developer.atlassian.com/cloud/trello/)就對了！
+	2. 接著，透過超方便的選單，手動將 Trello 成員和公會成員一一對應。這可以透過 `/configure trello member` 指令完成。
+	3. 你可能會只想追蹤 Trello 上某些清單包含的卡片，可以透過 `/configure trello list_to_trace` 來選擇。（也可以不要，那就會跑去預設的看板）
+	4. Trello 空間中可能會有很多看板，每個看板要設定一個新增卡片的時候要新增到上面的Trello清單，通常是「待完成」之類的。這可以透過 `/configure trello board_entry` 輕鬆設定！
+	5. 分配任務後，任務獸人會自動比對關鍵字分配到對應Trello 看板上，如果找不到合適的關鍵字，任務就會跑去預設的板子。用 `/configure trello board_keywords` 指令可以為板子設定特定關鍵字。
 
 * 分派任務囉！
 	1. 一定要提到機器人：在訊息的第一行，記得要 `@Task Orc` 一下，然後換下一行。(不要按成送出)
