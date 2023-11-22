@@ -27,7 +27,7 @@ from trello_handler import no_trello_error_msg
 from trello_handler import TrelloHandler
 from trello_handler import BoardListData
 from database_handler import TrelloSettings
-from views import ConfigurationPaginator
+# from views import ConfigurationPaginator
 from views import SetTrelloBoardListToCreateCardView
 from views import SetTrelloTargetListView
 from views import SetTrelloUserIdView
