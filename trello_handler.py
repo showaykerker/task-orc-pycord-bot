@@ -10,6 +10,8 @@ from typing import Union
 
 import numpy as np
 
+import ezcord
+from discord import ApplicationContext
 from trello import TrelloClient
 from trello.board import Board
 from trello.card import Card
@@ -82,6 +84,30 @@ class DateCard(Card):
         else:
             return np.inf
 
+no_trello_error_msg = lambda ctx: ezcord.emb.error(
+    ctx, "No Trello configuration found. Use /configure_trello First.")
+
+async def get_trello_instance(
+        cog_class: ezcord.Cog,
+        ctx: Union[ApplicationContext,int,str]) -> TrelloClient:
+    if isinstance(ctx, ApplicationContext):
+        gid = ctx.guild_id
+    else:
+        gid = ctx
+
+    if not cog_class.bot.trello.contains_guild(gid):
+        key, token = await cog_class.bot.db.get_trello_key_token(gid)
+        if key is None or token is None:
+            if isinstance(ctx, ApplicationContext):
+                await no_trello_error_msg(ctx)
+            return
+        await cog_class.bot.trello.add_client(gid, key, token)
+    trello = cog_class.bot.trello[gid]
+    if trello:
+        return trello
+    if isinstance(ctx, ApplicationContext):
+        await no_trello_error_msg(ctx)
+    return
 
 class FilteredCards:
     def __init__(self):
