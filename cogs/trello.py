@@ -40,17 +40,13 @@ from constant_values import admin_roles
 from constant_values import board_emojis
 from constant_values import charater_emojis
 from constant_values import due_emojis
-from modals import BoardKeywordModal
+from trello_handler import no_trello_error_msg
+from trello_handler import get_trello_instance
 from trello_handler import DateCard
 from trello_handler import FilteredCards
 from trello_handler import TrelloDummyAssign
 from utils import task_parser
-from views import SetTrelloBoardListToCreateCardView
-from views import SetTrelloTargetListView
-from views import SetTrelloUserIdView
 
-no_trello_error_msg = lambda ctx: emb.error(
-    ctx, "No Trello configuration found. Use /configure_trello First.")
 
 def dict_to_ascii_table(id_to_name: dict) -> str:
     fields = ["TrelloID", "Name"]
@@ -78,109 +74,13 @@ class Trello(Cog):
 
     trello_cmd = SlashCommandGroup("trello", "trello operations")
     tgetters = trello_cmd.create_subgroup("get", "getters")
-    tsetters = trello_cmd.create_subgroup("set", "setters")
-
-    async def get_trello_instance(
-            self,
-            ctx: Union[ApplicationContext,int,str]) -> TrelloClient:
-        if isinstance(ctx, ApplicationContext):
-            gid = ctx.guild_id
-        else:
-            gid = ctx
-
-        if not self.bot.trello.contains_guild(gid):
-            key, token = await self.bot.db.get_trello_key_token(gid)
-            if key is None or token is None:
-                if isinstance(ctx, ApplicationContext):
-                    await no_trello_error_msg(ctx)
-                return
-            await self.bot.trello.add_client(gid, key, token)
-        trello = self.bot.trello[gid]
-        if trello:
-            return trello
-        if isinstance(ctx, ApplicationContext):
-            await no_trello_error_msg(ctx)
-        return
-
-    trello_get = SlashCommandGroup("trello_get", "Getters")
-
-    @dc.slash_command(
-        name="configure_trello", description="Set trello key and token"
-    )
-    @guild_only()
-    @has_any_role(*admin_roles)
-    async def configure_trello(
-            self,
-            ctx: ApplicationContext,
-            key: Optional[str]=None,
-            token: Optional[str]=None) -> None:
-        await ctx.defer()
-        if key and token:
-            is_updated = await self.bot.db.set_trello_key_token(ctx.guild_id, key, token)
-            if is_updated:
-                await emb.success(ctx, "Trello key and token updated.")
-                self.bot.trello.remove_client(ctx.guild_id)
-
-        trello = await self.get_trello_instance(ctx)
-
-        # Update guild member list
-        await self.bot.db.configure_guild_members(ctx)
-        member_list = await self.bot.db.get_member_data(ctx.guild_id)
-        trello_id_to_name_dict = await self.bot.trello.get_members(trello)
-        discord_name_to_trello_id_dict = await self.bot.db.get_discord_name_to_trello_id_dict(ctx.guild_id, member_list)
-        discord_name_to_trello_name_dict = dict(
-            [(m, trello_id_to_name_dict.get(i) or "") for m, i in zip(member_list['name'], member_list['trello_id'])])
-
-        members_in_guild_to_be_assigned = dict(
-            [(m, i) for m, i in zip(member_list['name'], member_list['discord_id'])])
-
-        trello_id_to_name_dict["None"] = "None"
-        is_set_callback = lambda discord_id, trello_id: self.bot.db.update_trello_id(ctx.guild_id, discord_id, trello_id)
-        view = SetTrelloUserIdView(
-            ctx,
-            members_in_guild_to_be_assigned,
-            trello_id_to_name_dict,
-            is_set_callback,
-            discord_name_to_trello_name_dict)
-        await ctx.followup.send("用下拉選單設定成員名稱對照", view=view, embed=view.embed)
-
-    @dc.slash_command(
-        name="set_trello_list_to_trace"
-    )
-    @guild_only()
-    @has_any_role(*admin_roles)
-    async def set_trello_list_to_trace(self, ctx: ApplicationContext):
-        await ctx.defer()
-        trello = await self.get_trello_instance(ctx)
-        if trello is None: return
-
-        board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
-        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
-
-        view = SetTrelloTargetListView(ctx, board_list_data, trello_settings, self.bot.db)
-        await ctx.followup.send("用下拉選單設定追蹤的看板", view=view, embed=view.embed)
-
-    @dc.slash_command(name="set_trello_board_list_to_create")
-    @guild_only()
-    @has_any_role(*admin_roles)
-    async def set_trello_board_list_to_create_card(self, ctx: ApplicationContext):
-        await ctx.defer()
-        trello = await self.get_trello_instance(ctx)
-        if trello is None: return
-
-        board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
-        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
-
-        view = SetTrelloBoardListToCreateCardView(ctx, board_list_data, trello_settings, self.bot.db)
-        await ctx.followup.send("用下拉選單設定新增卡片的位置", view=view, embed=view.embed)
-
 
     @tgetters.command(
         name="boards", description="Get all boards"
     )
     @guild_only()
     async def boards(self, ctx: ApplicationContext) -> None:
-        trello = await self.get_trello_instance(ctx)
+        trello = await get_trello_instance(self, ctx)
         if trello is None: return
 
         all_boards = trello.list_boards()
@@ -204,7 +104,7 @@ class Trello(Cog):
     )
     @guild_only()
     async def get_trello_members(self, ctx: ApplicationContext) -> None:
-        trello = await self.get_trello_instance(ctx)
+        trello = await get_trello_instance(self, ctx)
         if trello is None: return
 
         embed = dc.Embed(
@@ -224,7 +124,7 @@ class Trello(Cog):
             self,
             ctx: ApplicationContext,
             user: str=Option(str, choices=['me', 'all'], default='me', required=False)) -> None:
-        trello = await self.get_trello_instance(ctx)
+        trello = await get_trello_instance(self, ctx)
         if trello is None: return
         await ctx.defer()
         board_id_to_name = await self.bot.trello.get_board_names(ctx.guild_id)
@@ -280,24 +180,11 @@ class Trello(Cog):
                 inline=True)
         return embed
 
-
     @tgetters.command(name="all_undone", description="Get all undone cards")
     @guild_only()
     async def get_all_trello_undone(self, ctx: ApplicationContext) -> None:
         await self.get_trello_undone(ctx, user="all")
 
-    @dc.slash_command(name="set_board_keywords")
-    @guild_only()
-    @has_any_role(*admin_roles)
-    async def set_board_keywords(self, ctx: ApplicationContext) -> None:
-        trello = await self.get_trello_instance(ctx)
-        if trello is None: return
-
-        board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
-        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
-
-        modal = BoardKeywordModal(ctx, board_list_data, trello_settings, self.bot.db)
-        await ctx.send_modal(modal)
 
     async def on_message(self, message: discord.Message) -> None:
 
@@ -307,7 +194,7 @@ class Trello(Cog):
         msgs = message.clean_content.split("\n")[1:]
         tasks = task_parser.parse_tasks(msgs)
 
-        trello = await self.get_trello_instance(message.guild.id)
+        trello = await get_trello_instance(self, message.guild.id)
         if trello is None: return
 
         dn2ti = await self.bot.db.get_discord_name_to_trello_id_dict(message.guild.id)

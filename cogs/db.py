@@ -49,7 +49,6 @@ class Database(Cog):
 
     db_cmd = SlashCommandGroup("db", "db operations")
     getters = db_cmd.create_subgroup("get", "getters")
-    setters = db_cmd.create_subgroup("set", "setters")
 
     @getters.command(
         name="members", description="Get member data from database.",
@@ -63,16 +62,6 @@ class Database(Cog):
         member_list = await self.bot.db.get_member_data(ctx.guild_id)
         title = title if title else f"{ctx.guild} 的成員們"
         await ctx.respond(f"**{title}**\n{df_to_ascii_table(member_list)}")
-
-    @dc.slash_command(
-        name="configure_guild_members", description="Fetch member data to database.",
-    )
-    @guild_only()
-    @has_any_role(*admin_roles)
-    async def configure_guild_members(self, ctx: ApplicationContext) -> None:
-        await self.bot.db.configure_guild_members(ctx)
-        await self._get_members(ctx, "以下的成員已經成功加到資料庫中。")
-
 
 
 

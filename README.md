@@ -66,9 +66,9 @@ See more usage examples [here](./task_assignment_usages.md).
 - [x] ~~Use rule-based method to handle task assiging messages and turn it into a Trello cards.~~ (23/11/14)
 - [x] ~~Overwrite assigned trello boards when assigning tasks.~~ (23/11/17)
 - [X] ~~Handle Trello ID configuring if members > 5.~~(23/11/21)
+- [X] ~~Handle Trello board keywords configuring if board > 5.~~(23/11/22)
+- [X] ~~Isolate configure commands to another command group that can only be used by admins.~~~(23/11/22)
 - [ ] Refactor configuration process. (In Progress)
-- [ ] Isolate configure command to another command group that can only be used by admins.
-- [ ] Handle Trello board keywords configuring if board > 5.
 - [ ] Time zone issue.
 - [ ] Sort out weekday assignment issue.
 - [ ] Add support for more time-assigning formats.
@@ -78,3 +78,4 @@ See more usage examples [here](./task_assignment_usages.md).
 - [ ] Make Trello key and token generation guide.
 - [ ] Assign tasks to multiple, but not all, members.
 - [ ] Refactor trello cogs.
+- [ ] Bug in list_to_trace view when identical list names are in multiple boards.
