@@ -91,7 +91,7 @@ class SetTrelloUserIdView(View):
         if len(self.to_be_assigned) == 0:
             self.is_set_button.label="完成！"
         self.add_item(self.is_set_button)
-        self.embed.set_footer(text=f"剩餘{len(self.to_be_assigned)}人未設定")
+        self.embed.set_footer(text=f"剩餘{len(self.to_be_assigned)}人")
         self.embed.color=dc.Colour.fuchsia()
 
 
