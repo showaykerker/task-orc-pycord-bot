@@ -38,6 +38,7 @@ class SetTrelloUserIdView(View):
             is_set_callback: Callable[str, str],  # func(discord_id, trello_id) update trello_id in database
             discord_name_to_trello_name_dict: Dict[str, str]={}) -> None:  # {discord_name: trello_name}
         super().__init__()
+        self.prefix = "set_trello_user_id_view_"
         self.to_be_assigned = copy.deepcopy(members_in_guild_to_be_assigned)
         self.candidate = copy.deepcopy(members_in_guild_to_be_assigned)
         self.options = trello_id_to_name_dict
@@ -49,9 +50,14 @@ class SetTrelloUserIdView(View):
         self.selected_item_to_embed_field_id = {}
         self.results_discord_name_to_trello_id = {}
         self.results_discord_name_to_trello_name = discord_name_to_trello_name_dict
-        self.is_set_button = Button(
+        self.get_next_batch_button = Button(
             label="設定下一批！",
-            custom_id="is_set_button",
+            custom_id=f"{self.prefix}get_next_batch_button",
+            style=ButtonStyle.secondary
+        )
+        self.is_set_button = Button(
+            label="完成！",
+            custom_id=f"{self.prefix}is_set_button",
             style=ButtonStyle.primary
         )
         self.update_view()
@@ -73,7 +79,7 @@ class SetTrelloUserIdView(View):
                     ) for member_id, name in self.options.items()
                 ]
             )
-            select.custom_id = discord_name
+            select.custom_id = f"{self.prefix}{discord_name}"
             self.add_item(select)
             keys_to_be_remove.append(discord_name)
             if i == self.MAX_PER_PAGE - 1:
@@ -89,14 +95,15 @@ class SetTrelloUserIdView(View):
             )
 
         if len(self.to_be_assigned) == 0:
-            self.is_set_button.label="完成！"
+            self.get_next_batch_button.disabled = True
+        self.add_item(self.get_next_batch_button)
         self.add_item(self.is_set_button)
         self.embed.set_footer(text=f"剩餘{len(self.to_be_assigned)}人")
         self.embed.color=dc.Colour.fuchsia()
 
 
-    async def interaction_check(self, interaction):
-        if interaction.custom_id != "is_set_button":
+    async def interaction_check(self, interaction, from_paginator=False):
+        if not interaction.custom_id.endswith("button"):
             await self.on_select(interaction)
             return True
         else:
@@ -107,17 +114,19 @@ class SetTrelloUserIdView(View):
                     await self.is_set_callback(discord_id, trello_id)
                     actually_set.append(discord_name)
             actually_set_verbose = ", ".join(actually_set)
-            if self.is_set_button.label == "完成！":
+            if len(self.to_be_assigned) == 0:
                 self.disable_all_items()
                 self.embed.color=dc.Colour.green()
-                await interaction.response.edit_message(content="設定完成！", view=self, embed=self.embed)
+                if not from_paginator:
+                    await interaction.response.edit_message(content="設定完成！", view=self, embed=self.embed)
             else:
                 self.update_view()
-                await interaction.response.edit_message(view=self, embed=self.embed)
+                if not from_paginator:
+                    await interaction.response.edit_message(view=self, embed=self.embed)
 
     async def on_select(self, interaction):
         trello_id = interaction.data["values"][0]
-        discord_name = interaction.data["custom_id"]
+        discord_name = interaction.data["custom_id"].replace(self.prefix, "")
         trello_name = self.options.get(trello_id)
 
         self.results_discord_name_to_trello_id[discord_name] = trello_id
