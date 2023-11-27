@@ -41,7 +41,7 @@ def dict_to_ascii_table(board_name_to_list_name: Dict[str, str]) -> str:
     )
     return f"```\n{table}\n```"[:1024]
 
-class SetTrelloBoardListToCreateCardView(View):
+class SetTrelloBoardEntryView(View):
     MAX_PER_PAGE = 4
     def __init__(
             self,

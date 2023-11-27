@@ -23,7 +23,7 @@ from database_handler import TrelloSettings
 from trello_handler import BoardListData
 from trello_handler import TrelloHandler
 
-class SetTrelloTargetListView(View):
+class SetTrelloInterestedListView(View):
     def __init__(
             self,
             ctx: ApplicationContext,

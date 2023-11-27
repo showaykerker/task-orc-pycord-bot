@@ -28,8 +28,8 @@ from trello_handler import TrelloHandler
 from trello_handler import BoardListData
 from database_handler import TrelloSettings
 # from views import ConfigurationPaginator
-from views import SetTrelloBoardListToCreateCardView
-from views import SetTrelloTargetListView
+from views import SetTrelloBoardEntryView
+from views import SetTrelloInterestedListView
 from views import SetTrelloUserIdView
 from modals import BoardKeywordModal
 
@@ -137,24 +137,24 @@ class Configuration(Cog):
             ctx: ApplicationContext,
             trello: Optional[TrelloHandler] = None,
             board_list_data: Optional[BoardListData] = None,
-            trello_settings: Optional[TrelloSettings] = None) -> SetTrelloTargetListView:
+            trello_settings: Optional[TrelloSettings] = None) -> SetTrelloInterestedListView:
         trello = trello or await get_trello_instance(self, ctx)
         if trello is None: return
         board_list_data = board_list_data or await self.bot.trello.get_board_list_data(ctx.guild_id)
         trello_settings = trello_settings or await self.bot.db.get_trello_settings(ctx.guild_id)
-        return SetTrelloTargetListView(ctx, board_list_data, trello_settings, self.bot.db)
+        return SetTrelloInterestedListView(ctx, board_list_data, trello_settings, self.bot.db)
 
     async def _get_set_trello_board_list_to_create_card_view(
             self,
             ctx: ApplicationContext,
             trello: Optional[TrelloHandler] = None,
             board_list_data: Optional[BoardListData] = None,
-            trello_settings: Optional[TrelloSettings] = None) -> SetTrelloBoardListToCreateCardView:
+            trello_settings: Optional[TrelloSettings] = None) -> SetTrelloBoardEntryView:
         trello = trello or await get_trello_instance(self, ctx)
         if trello is None: return
         board_list_data = board_list_data or await self.bot.trello.get_board_list_data(ctx.guild_id)
         trello_settings = trello_settings or await self.bot.db.get_trello_settings(ctx.guild_id)
-        return SetTrelloBoardListToCreateCardView(ctx, board_list_data, trello_settings, self.bot.db)
+        return SetTrelloBoardEntryView(ctx, board_list_data, trello_settings, self.bot.db)
 
     async def _get_board_keyword_modal(
             self,
