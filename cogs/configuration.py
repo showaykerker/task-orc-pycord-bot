@@ -147,7 +147,7 @@ class Configuration(Cog):
         trello_settings = trello_settings or await self.bot.db.get_trello_settings(ctx.guild_id)
         return SetTrelloInterestedListView(ctx, board_list_data, trello_settings, self.bot.db)
 
-    async def _get_set_trello_board_list_to_create_card_view(
+    async def _get_set_trello_board_entry_view(
             self,
             ctx: ApplicationContext,
             trello: Optional[TrelloHandler] = None,
