@@ -65,6 +65,9 @@ class Configuration(Cog):
             if is_updated:
                 await emb.success(ctx, "Trello key and token updated.")
                 self.bot.trello.remove_client(ctx.guild_id)
+            else:
+                await get_trello_instance(self, ctx)
+                await emb.success(ctx, "Trello key and token set.")
 
 
     @conf_tl.command(
