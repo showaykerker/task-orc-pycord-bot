@@ -27,7 +27,7 @@ from trello_handler import no_trello_error_msg
 from trello_handler import TrelloHandler
 from trello_handler import BoardListData
 from database_handler import TrelloSettings
-# from views import ConfigurationPaginator
+from views import ConfigurationPaginator
 from views import SetTrelloBoardEntryView
 from views import SetTrelloInterestedListView
 from views import SetTrelloUserIdView
@@ -41,6 +41,50 @@ class Configuration(Cog):
     config_cmd = SlashCommandGroup("configure", "Configuration Commands")
     conf_db = config_cmd.create_subgroup("database", "Database Configurations")
     conf_tl = config_cmd.create_subgroup("trello", "Trello Configurations")
+
+    @config_cmd.command(name="all", description="Configure all.")
+    @guild_only()
+    @has_any_role(*admin_roles)
+    async def conf_all(self, ctx: ApplicationContext) -> None:
+
+        trello = await get_trello_instance(self, ctx)
+        if trello is None:
+            emb.error("請先用 `/configure trello key_token` 設定 Trello 的密鑰和權杖")
+            return
+
+        await ctx.defer()
+        board_list_data = await self.bot.trello.get_board_list_data(ctx.guild_id)
+        trello_settings = await self.bot.db.get_trello_settings(ctx.guild_id)
+
+        await self.bot.db.configure_guild_members(ctx)
+
+        views = [
+            {
+                "name": "set_trello_user_id_view",
+                "content": "設定 Trello 帳號對應的 Discord 成員",
+                "custom_view": await self._get_set_trello_user_id_view(ctx, trello)
+            },
+            {
+                "name": "set_trello_intersted_lists_view",
+                "content": "設定要追蹤的 Trello 看板",
+                "custom_view": await self._get_set_trello_intersted_lists_view(
+                    ctx, trello, board_list_data, trello_settings)
+            },
+            {
+                "name": "set_trello_board_entry_view",
+                "content": "設定用來新增卡片的 Trello 清單",
+                "custom_view": await self._get_set_trello_board_entry_view(
+                    ctx, trello, board_list_data, trello_settings)
+            }
+        ]
+        # config_pages = [
+        #     dc.Embed(title="設定", description="請照著指令完成全部設定"),
+        # ] + [pages.Page(embeds=[v["custom_view"].embed], **v) for v in views]
+
+        paginator = ConfigurationPaginator(views)
+
+        await paginator.respond(ctx.interaction, ephemeral=False)
+        # await paginator.wait()
 
     @conf_db.command(
         name="guild_members",

@@ -107,6 +107,7 @@ class SetTrelloUserIdView(View):
             await self.on_select(interaction)
             return True
         else:
+            print("set trello user id view interaction check")
             actually_set = []
             for discord_name, trello_id in self.results_discord_name_to_trello_id.items():
                 discord_id = self.candidate[discord_name]

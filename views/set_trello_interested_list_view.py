@@ -74,14 +74,15 @@ class SetTrelloInterestedListView(View):
             set(self.trello_settings.list_name_not_to_trace))
 
     async def interaction_check(self, interaction, from_paginator=False):
+        print("set trello interested list view interaction check")
         if interaction.custom_id.endswith("select_target"):
             await self.on_select(interaction)
-            self.disable_all_items()
             await self.data.set_trello_traced_list_name_not_to_trace(
                 self.ctx.guild_id,
                 self.trello_settings.list_name_not_to_trace)
             self.embed.color=dc.Colour.green()
             if not from_paginator:
+                self.disable_all_items()
                 await interaction.response.edit_message(
                     content=f"Traced List Set.",
                     view=self, embed=self.embed)

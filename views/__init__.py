@@ -1,3 +1,5 @@
+from .configuration_paginator import ConfigurationPaginator
+from .configuration_paginator import ViewData
 from .set_trello_user_id_view import SetTrelloUserIdView
 from .set_trello_interested_list_view import SetTrelloInterestedListView
 from .set_trello_board_entry_view import SetTrelloBoardEntryView
