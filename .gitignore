@@ -162,3 +162,5 @@ cython_debug/
 *.db
 
 .DS_Store
+
+credentials.json
