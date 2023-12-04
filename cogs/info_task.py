@@ -4,7 +4,7 @@ import discord
 import requests
 
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 from typing import List
 from typing import Optional
@@ -33,9 +33,10 @@ class SoupBase:
         self.name = name
         self.url = url
         if use_selenium:
-            self.options = FirefoxOptions()
-            self.options.add_argument("--headless")
-            self.driver = webdriver.Firefox(options=self.options)
+            self.options = ChromeOptions()
+            self.options.add_argument("--disable-extenstions")
+            self.options.add_argument("--headless");
+            self.driver = webdriver.Chrome(options=self.options)
             self.driver.get(url)
             self.web = self.driver.page_source
             self.soup = BeautifulSoup(self.web, "html.parser")
@@ -46,7 +47,7 @@ class SoupBase:
         pass
     async def get_driver(self, url: str, use_selenium: bool=False):
         if use_selenium:
-            driver = webdriver.Firefox(options=self.options)
+            driver = webdriver.Chrome(options=self.options)
             driver.get(url)
             web = driver.page_source
             return BeautifulSoup(web, "html.parser")
