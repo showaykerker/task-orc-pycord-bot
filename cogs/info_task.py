@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import discord
+import logging
 import requests
 
 from selenium import webdriver
@@ -16,6 +17,7 @@ from dateutil.relativedelta import relativedelta
 from discord.ext import commands
 from discord.ext import tasks
 from ezcord.internal.dc import discord as dc
+from ezcord import log
 
 class Event:
     def __init__(
@@ -147,11 +149,46 @@ class IdeaShow(SoupBase):
             results.append(Event(title, None, endtime, self.name, link, info, img_link))
         return results
 
+class Musico(SoupBase):
+    def __init__(self, keywords) -> None:
+        super().__init__(
+            'Musico',
+            f'https://www.musico.com.tw/all-search/?keyword={keyword}&post-cat%5B%5D=36', False)
+    async def get_events(self) -> List[Event]:
+        results = []
+        events = self.soup.find_all("div", class_="post-list-wrap")
+        for event in events:
+            try:
+                title_info = event.find("h2", class_="entry-title").find('a')
+                title = title_info.string
+                link = title_info["href"]
+                if not ("募集" in title or "徵選" in title): continue
+                postdate = event.find("h5").string.split('/')[0]
+                postdate = datetime.datetime.strptime(postdate, "%Y.%m.%d")
+                if postdate < datetime.datetime.now() - relativedelta(days=7): # - relativedelta(months=36):
+                    break
+                info = event.find("div", class_="post-excerpt").text.strip().split('\n')[0]
+                img = event.find("div", class_="image_wrapper").find("img")["src"]
+                results.append(Event(title, postdate, None, self.name, link, info, img))
+            except AttributeError:
+                log.warning(f"AttributeError: {event}")
+        return results
+
 async def find_audition_info():
     events = []
+    log.info("Finding audition info...")
+    log.info("From StreetVoice")
     events += await StreetVoiceSoup().get_events()
-    # events += await BountyHunterSoup().get_events()
+    log.info("From BountyHunter")
+    events += await BountyHunterSoup().get_events()
+    log.info("From IdeaShow")
     events += await IdeaShow().get_events()
+    log.info("From Musico")
+    events += await Musico("樂團徵選").get_events()
+    events += await Musico("原創音樂徵選").get_events()
+    log.info("Done")
+    for e in events:
+        print(e)
     return events
 
 class InfoTask(commands.Cog):
