@@ -19,6 +19,17 @@ from discord.ext import tasks
 from ezcord.internal.dc import discord as dc
 from ezcord import log
 
+class Events:
+    def __init__(self):
+        self.events = {}
+    def __iadd__(self, events: List['Event']):
+        for event in events:
+            if event.title not in self.events:
+                self.events[event.title] = event
+        return self
+    def __iter__(self):
+        return iter(self.events.values())
+
 class Event:
     def __init__(
             self,
@@ -204,7 +215,7 @@ class Ltn(SoupBase):
         return results
 
 async def find_audition_info():
-    events = []
+    events = Events()
     log.info("Finding audition info...")
     log.info("From StreetVoice")
     events += await StreetVoiceSoup().get_events()
