@@ -18,6 +18,8 @@ from discord.ext import commands
 from discord.ext import tasks
 from ezcord.internal.dc import discord as dc
 from ezcord import log
+from ezcord import Cog
+from ezcord import Bot
 
 class Events:
     def __init__(self):
@@ -29,6 +31,8 @@ class Events:
         return self
     def __iter__(self):
         return iter(self.events.values())
+    def __len__(self):
+        return len(self.events)
 
 class Event:
     def __init__(
@@ -217,7 +221,7 @@ class Ltn(SoupBase):
                 log.warning(f"AttributeError: {event}")
         return results
 
-async def find_audition_info():
+async def find_audition_info() -> Events:
     events = Events()
     log.info("Finding audition info...")
 
@@ -245,46 +249,70 @@ async def find_audition_info():
         log.info(str(e))
     return events
 
-class InfoTask(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+class InfoTask(Cog):
+    def __init__(self, bot: Bot):
+        super().__init__(bot)
+        self.guild_already_send_title = {}  # {guild_id: [title, title, ...]}
         self.find_audition_info_task.start()
-        self.events = []
+        self.events = Events()
 
     def cog_unload(self):
         self.find_audition_info_task.stop()
 
-    async def send_to_channels(self, events):
+    def _get_embed(self, events:Optional[Events]=None) -> dc.Embed:
+        if events is None: events = self.events
+        embed = dc.Embed(
+            title = "找到的Auditions",
+            color=dc.Colour.green()
+        )
+        for event in events:
+            embed.add_field(
+                name=event.title,
+                value=f"截止時間：{event.endtime}\n"\
+                    f"```{event.info[:100]}...```\n"\
+                    f"[Check it on {event.source}](<{event.link}>)",
+                inline=True)
+        return embed
+
+    dc.slash_command(name="get_event_info", description="Get events from all websites")
+    async def get_event_info(self, ctx: commands.Context, refresh: bool=False):
+        if refresh or len(self.events) == 0:
+            await ctx.defer()
+            events = await find_audition_info()
+        else:
+            events = self.events
+        embed = self._get_embed(events)
+        await ctx.send(embed=embed)
+
+    async def send_to_channels(self, events: Optional[Events]=None):
+        if events is None: events = self.events
         async for guild in self.bot.fetch_guilds():
             channels = await guild.fetch_channels()
             for channel in channels:
-                # print(channel.name)
-                if channel.name == "task-orc":
-                    embed = dc.Embed(
-                        title = "找到的Auditions",
-                        color=dc.Colour.green()
-                    )
+                if channel.name in ["task-orc", "events"]:
+                    not_send_events = Events()
+                    if guild.id not in self.guild_already_send_title:
+                        self.guild_already_send_title[guild.id] = []
                     for event in events:
-                        embed.add_field(
-                            name=event.title,
-                            value=f"截止時間：{event.endtime}\n"\
-                                f"```{event.info[:50]}...```\n"\
-                                f"[Check it on {event.source}](<{event.link}>)",
-                            inline=True)
+                        if event.title not in self.guild_already_send_title[guild.id]:
+                            self.guild_already_send_title[guild.id].append(event.title)
+                            not_send_events += [event]
+                    if len(not_send_events) == 0: continue
+                    embed = self._get_embed(not_send_events)
                     await channel.send(embed=embed)
 
     @tasks.loop(time=datetime.time(hour=16))  # Run at 00:00 everyday
     # @tasks.loop(minutes=10.0)
     async def find_audition_info_task(self):
-        events = await find_audition_info()
-        await self.send_to_channels(events)
+        self.events = await find_audition_info()
+        await self.send_to_channels()
 
     @find_audition_info_task.before_loop
     async def before_periodic_task(self):
         await self.bot.wait_until_ready()  # Wait until the bot is ready before starting the task
 
 
-def setup(bot):
+def setup(bot: Bot):
     bot.add_cog(InfoTask(bot))
 
 if __name__ == '__main__':
