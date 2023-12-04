@@ -150,7 +150,7 @@ class IdeaShow(SoupBase):
         return results
 
 class Musico(SoupBase):
-    def __init__(self, keywords) -> None:
+    def __init__(self, keyword) -> None:
         super().__init__(
             'Musico',
             f'https://www.musico.com.tw/all-search/?keyword={keyword}&post-cat%5B%5D=36', False)
