@@ -101,8 +101,7 @@ class BountyHunterSoup(SoupBase):
         if content is None: return None, None
         if "樂團" in content or "團體" in content or "創作" in content:
             endtime = content.find_all("span", class_="bh-value")[-1].string
-            print(endtime)
-            endtime = datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M")
+            endtime = datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M") # + relativedelta(months=24)
             img_link = content.find("img", class_="bh-image")["src"]
             return endtime, img_link
         return None, None
@@ -125,11 +124,11 @@ class IdeaShow(SoupBase):
     def __init__(self) -> None:
         super().__init__('IdeaShow', 'https://news.idea-show.com/tag/樂團徵選/', True)
     async def read_inside(self, url) -> Tuple[Optional[str], Optional[str]]:
-        soup = await self.get_driver(url, use_selenium=True)
+        soup = await self.get_driver(url, use_selenium=False)
         endtime = soup.find_all("span", class_="event-date")
         if endtime:
             endtime = endtime[-1].string  # 2023-03-31
-            endtime = datetime.datetime.strptime(endtime, "%Y-%m-%d")
+            endtime = datetime.datetime.strptime(endtime, "%Y-%m-%d")  # + relativedelta(months=3)
             img_link = soup.find("div", class_="post-more-meta-thumbnail").find("img")["src"]
             return endtime, img_link
         return None, None
@@ -184,7 +183,7 @@ class InfoTask(commands.Cog):
                     await channel.send(embed=embed)
 
     @tasks.loop(time=datetime.time(hour=16))  # Run at 00:00 everyday
-    # @tasks.loop(minutes=10.0)  # Run at 00:00 everyday
+    # @tasks.loop(minutes=10.0)
     async def find_audition_info_task(self):
         events = await find_audition_info()
         await self.send_to_channels(events)
@@ -192,6 +191,7 @@ class InfoTask(commands.Cog):
     @find_audition_info_task.before_loop
     async def before_periodic_task(self):
         await self.bot.wait_until_ready()  # Wait until the bot is ready before starting the task
+
 
 def setup(bot):
     bot.add_cog(InfoTask(bot))
