@@ -6,6 +6,7 @@ import requests
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
 
 from typing import List
 from typing import Optional
@@ -67,7 +68,9 @@ class SoupBase:
             self.options = ChromeOptions()
             self.options.add_argument("--disable-extenstions")
             self.options.add_argument("--headless");
-            self.driver = webdriver.Chrome(options=self.options)
+            self.service = ChromeService(executable_path="/usr/bin/chromedriver")
+            # sudo apt-get install chromium-chromedriver
+            self.driver = webdriver.Chrome(options=self.options, service=self.service)
             self.driver.get(url)
             self.web = self.driver.page_source
             self.soup = BeautifulSoup(self.web, "html.parser")
@@ -78,7 +81,7 @@ class SoupBase:
         return self.soup.find_all("div", class_=class_)
     async def get_driver(self, url: str, use_selenium: bool=False):
         if use_selenium:
-            driver = webdriver.Chrome(options=self.options)
+            driver = webdriver.Chrome(options=self.options, service=self.service)
             driver.get(url)
             web = driver.page_source
             return BeautifulSoup(web, "html.parser")
@@ -289,7 +292,7 @@ class InfoTask(Cog):
         async for guild in self.bot.fetch_guilds():
             channels = await guild.fetch_channels()
             for channel in channels:
-                if channel.name in ["task-orc", "events"]:
+                if channel.name in ["task-orc", "robot-playground"]:
                     not_send_events = Events()
                     if guild.id not in self.guild_already_send_title:
                         self.guild_already_send_title[guild.id] = []
@@ -302,7 +305,7 @@ class InfoTask(Cog):
                     await channel.send(embed=embed)
 
     @tasks.loop(time=datetime.time(hour=16))  # Run at 00:00 everyday
-    # @tasks.loop(minutes=10.0)
+    #@tasks.loop(minutes=10.0)
     async def find_audition_info_task(self):
         self.events = await find_audition_info()
         await self.send_to_channels()
