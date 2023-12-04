@@ -211,8 +211,6 @@ class Ltn(SoupBase):
                     continue
                 postdate = event.find("span", class_="time").string
                 postdate = datetime.datetime.strptime(postdate, "%Y/%m/%d")
-                if postdate < datetime.datetime.now() - relativedelta(days=700): # - relativedelta(months=36):
-                    break
                 img = event.find("img")["src"]
                 results.append(Event(title, postdate, None, self.name, link, info, img))
             except AttributeError:
@@ -222,22 +220,29 @@ class Ltn(SoupBase):
 async def find_audition_info():
     events = Events()
     log.info("Finding audition info...")
+
     log.info("From StreetVoice")
     events += await StreetVoiceSoup().get_events()
+
     log.info("From BountyHunter")
     events += await BountyHunterSoup().get_events()
+
     log.info("From IdeaShow")
     events += await IdeaShow().get_events()
+
     log.info("From Musico")
     events += await Musico("樂團徵選").get_events()
     events += await Musico("原創音樂徵選").get_events()
     events += await Musico("創作徵選").get_events()
+
     log.info("From Ltn")
     events += await Ltn("樂團徵選").get_events()
     events += await Ltn("音樂徵選").get_events()
-    log.info("Done")
+
+    log.info("Done\n")
+
     for e in events:
-        print(e)
+        log.info(str(e))
     return events
 
 class InfoTask(commands.Cog):
