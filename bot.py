@@ -24,7 +24,7 @@ class TaskOrc(ezcord.Bot):
         self.trello = TrelloHandler()
         self.add_listener(self.on_events_forward, "on_message")
 
-    @watch(path="cogs", preload=True, debug=True)
+    @watch(path="cogs", preload=False, debug=True)
     async def on_ready(self):
         await self.db.setup()
         print("Bot ready.")
