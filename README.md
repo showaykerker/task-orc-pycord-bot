@@ -77,5 +77,6 @@ See more usage examples [here](./task_assignment_usages.md).
 - [ ] Make Trello key and token generation guide.
 - [ ] Assign tasks to multiple, but not all, members.
 - [ ] Refactor trello cogs.
-- [ ] Bug in list_to_trace view when identical list names are in multiple boards.
 - [ ] Fix slash command in info_task.
+- [ ] [Bug] in list_to_trace view when identical list names are in multiple boards.
+- [ ] [Bug] Requesting undone cards causes ResourceUnavailable error when the negative list is too long.
