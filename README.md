@@ -52,31 +52,32 @@ See more usage examples [here](./task_assignment_usages.md).
 
 ## TODO
 
-- [x] ~~Complete undone trello card command.~~ (23/11/09)
-- [x] ~~Add a command to show all undone Trello cards assigned to a user.~~ (23/11/10)
-- [x] ~~Modify trello configuring with an option to not pass in key and token.~~ (23/11/10)
-- [x] ~~Show already set trello id table when re-configuring.~~ (23/11/10)
-- [x] ~~Compare speed of getting interested cards between directly from requests to py-trello.~~ (Py-trello is faster)
-- [x] ~~Add link to cards and link to all cards page.~~ (23/11/11)
-- [x] ~~Add ChatGPT support for task assigning.~~ (ChatGPT not stable enough)
-- [x] ~~UI to select Trello boards/ lists to get cards from.~~ (23/11/13)
-- [x] Add UI to assign Trello board keywords.
-- [x] ~~Use rule-based method to handle task assiging messages and turn it into a Trello cards.~~ (23/11/14)
-- [x] ~~Overwrite assigned trello boards when assigning tasks.~~ (23/11/17)
-- [X] ~~Handle Trello ID configuring if members > 5.~~ (23/11/21)
-- [X] ~~Handle Trello board keywords configuring if board > 5.~~  (23/11/22)
-- [X] ~~Isolate configure commands to another command group that can only be used by admins.~~ (23/11/22)
-- [X] ~~Add crawler for band auditions.~~ (23/12/04)
-- [ ] Refactor configuration process. (In Progress)
-- [ ] Time zone issue.
-- [ ] Sort out weekday assignment issue.
-- [ ] Add support for more time-assigning formats.
-- [ ] Add support to assign task with a time rather than only date.
-- [ ] Figure out a way to show check lists in cards.
-- [ ] Document with images.
-- [ ] Make Trello key and token generation guide.
-- [ ] Assign tasks to multiple, but not all, members.
-- [ ] Refactor trello cogs.
-- [ ] Fix slash command in info_task.
-- [ ] [Bug] in list_to_trace view when identical list names are in multiple boards.
+- [x] ~~[Feature] Complete undone trello card command.~~ (23/11/09)
+- [x] ~~[Feature] Add a command to show all undone Trello cards assigned to a user.~~ (23/11/10)
+- [x] ~~[Feature] Modify trello configuring with an option to not pass in key and token.~~ (23/11/10)
+- [x] ~~[Feature] Show already set trello id table when re-configuring.~~ (23/11/10)
+- [x] ~~[Chore] Compare speed of getting interested cards between directly from requests to py-trello.~~ (Py-trello is faster)
+- [x] ~~[Feature] Add link to cards and link to all cards page.~~ (23/11/11)
+- [x] ~~[Feature] Add ChatGPT support for task assigning.~~ (ChatGPT not stable enough)
+- [x] ~~[Feature] UI to select Trello boards/ lists to get cards from.~~ (23/11/13)
+- [x] ~~[Feature] Add UI to assign Trello board keywords.~~
+- [x] ~~[Feature] Use rule-based method to handle task assiging messages and turn it into a Trello cards.~~ (23/11/14)
+- [x] ~~[Feature] Overwrite assigned trello boards when assigning tasks.~~ (23/11/17)
+- [X] ~~[Feature] Handle Trello ID configuring if members > 5.~~ (23/11/21)
+- [X] ~~[Feature] Handle Trello board keywords configuring if board > 5.~~  (23/11/22)
+- [X] ~~[Refactor] Isolate configure commands to another command group that can only be used by admins.~~ (23/11/22)
+- [X] ~~[Feature] Add crawler for band auditions.~~ (23/12/04)
+- [ ] [Document] Document with images.
+- [ ] [Document] Make Trello key and token generation guide.
+- [ ] [Feature] Figure out a way to show check lists in cards.
+- [ ] [Feature] Add support to assign task with a time rather than only date.
+- [ ] [Feature] Add support for more time-assigning formats.
+- [ ] [Feature] Assign tasks to multiple, but not all, members.
+- [ ] [Refactor] Time zone issue.
+- [ ] [Refactor] Configuration process. (In Progress)
+- [ ] [Refactor] Trello cogs.
+- [ ] [Debug Info] Add more logging.
+- [ ] [Bug] Fix slash command in info_task.
+- [ ] [Bug] Weekday assignment issue get wrong date if assigned weekday is today's weekday.
+- [ ] [Bug] In list_to_trace view when identical list names are in multiple boards.
 - [ ] [Bug] Requesting undone cards causes ResourceUnavailable error when the negative list is too long.
