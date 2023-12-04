@@ -18,15 +18,29 @@ from discord.ext import tasks
 from ezcord.internal.dc import discord as dc
 
 class Event:
-    def __init__(self, title: str, endtime: datetime.datetime, source: str, link:str, info: str="", img: str=None) -> None:
+    def __init__(
+            self,
+            title: str,
+            posttime: Optional[datetime.datetime],
+            endtime: Optional[datetime.datetime],
+            source: str,
+            link:str,
+            info: str="",
+            img: str=None) -> None:
         self.title = title
+        self.posttime = posttime
         self.endtime = endtime
         self.source = source
         self.link = link
         self.info = info
         self.img = img
     def __str__(self) -> str:
-        return f"<Event> {self.source} {self.title}: {self.endtime}"
+        return f"<Event> {self.source} {self.title}\n"\
+            f"\tposttime: {self.posttime}\n"\
+            f"\tendtime: {self.endtime}\n"\
+            f"\tinfo: {self.info}\n"\
+            f"\timg: {self.img}\n"\
+            f"\tlink: {self.link}\n"
 
 class SoupBase:
     def __init__(self, name: str, url: str, use_selenium: bool=False) -> None:
@@ -43,7 +57,7 @@ class SoupBase:
         else:
             self.web = requests.get(url)
             self.soup = BeautifulSoup(self.web.text, "html.parser")
-    def get_events(self) -> List[Event]:
+    async def get_events(self) -> List[Event]:
         pass
     async def get_driver(self, url: str, use_selenium: bool=False):
         if use_selenium:
@@ -74,7 +88,7 @@ class StreetVoiceSoup(SoupBase):
             date_string, time_string, _ = endtime.split(" ") # "2023-12-19 23:59"
             endtime = datetime.datetime.strptime(f"{date_string} {time_string}", "%Y-%m-%d %H:%M")
             img = event.find("img")["src"]
-            results.append(Event(title, endtime, self.name, link, info, img))
+            results.append(Event(title, None, endtime, self.name, link, info, img))
         return results
 
 class BountyHunterSoup(SoupBase):
@@ -103,7 +117,8 @@ class BountyHunterSoup(SoupBase):
             endtime, img_link = await self.read_inside(link)
             if endtime is not None:
                 if endtime < datetime.datetime.now(): break
-                results.append(Event(title, endtime, self.name, link, "", img))
+                info = ""
+                results.append(Event(title, None, endtime, self.name, link, info, img))
         return results
 
 class IdeaShow(SoupBase):
@@ -126,10 +141,11 @@ class IdeaShow(SoupBase):
             title = title_info.find("a").string
             link = title_info.find("a")["href"]
             endtime, img_link = await self.read_inside(link)
-            print(endtime, img_link)
             if endtime is None: continue
             if endtime < datetime.datetime.now(): break
-            results.append(Event(title, endtime, self.name, link, "", img_link))
+            info = event.find("div", class_="entry excerpt entry-summary fittexted_for_entry").find("p")
+            info = info.get_text(strip=True, separator='\n')
+            results.append(Event(title, None, endtime, self.name, link, info, img_link))
         return results
 
 async def find_audition_info():
