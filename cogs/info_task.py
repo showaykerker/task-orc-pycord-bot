@@ -188,13 +188,18 @@ class Musico(SoupBase):
 
 class Ltn(SoupBase):
     def __init__(self, keyword) -> None:
+        start_time = (datetime.datetime.now() - relativedelta(days=7)).strftime("%Y%m%d")
+        end_time = datetime.datetime.now().strftime("%Y%m%d")
         super().__init__(
             '自由電子報',
-            f'https://search.ltn.com.tw/list?keyword={keyword}&type=all&sort=date')
+            f'https://search.ltn.com.tw/list?keyword={keyword}&type=all&sort=date&start_time={start_time}&end_time={end_time}',
+            False)
         # &start_time=20231203&end_time=20231204
     async def get_events(self) -> List[Event]:
         results = []
-        for event in self.soup.find("ul", class_="list boxTitle").find_all("li"):
+        news_list = self.soup.find("ul", class_="list boxTitle")
+        if news_list is None: return results
+        for event in news_list.find_all("li"):
             try:
                 title_info = event.find("a")
                 title = title_info["title"]
