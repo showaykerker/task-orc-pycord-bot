@@ -252,7 +252,7 @@ async def find_audition_info() -> Events:
         log.info(str(e))
     return events
 
-class InfoTask(Cog):
+class AuditionCrawler(Cog):
     def __init__(self, bot: Bot):
         super().__init__(bot)
         self.guild_already_send_title = {}  # {guild_id: [title, title, ...]}
@@ -277,8 +277,8 @@ class InfoTask(Cog):
                 inline=True)
         return embed
 
-    dc.slash_command(name="get_event_info", description="Get events from all websites")
-    async def get_event_info(self, ctx: commands.Context, refresh: bool=False):
+    dc.slash_command(name="get_audition_info", description="Get events from all websites")
+    async def get_audition_info(self, ctx: commands.Context, refresh: bool=False):
         if refresh or len(self.events) == 0:
             await ctx.defer()
             events = await find_audition_info()
@@ -305,7 +305,7 @@ class InfoTask(Cog):
                     await channel.send(embed=embed)
 
     @tasks.loop(time=datetime.time(hour=16))  # Run at 00:00 everyday
-    #@tasks.loop(minutes=10.0)
+    # @tasks.loop(minutes=10.0)
     async def find_audition_info_task(self):
         self.events = await find_audition_info()
         await self.send_to_channels()
@@ -316,7 +316,7 @@ class InfoTask(Cog):
 
 
 def setup(bot: Bot):
-    bot.add_cog(InfoTask(bot))
+    bot.add_cog(AuditionCrawler(bot))
 
 if __name__ == '__main__':
     asyncio.run(find_audition_info())
