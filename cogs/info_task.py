@@ -175,6 +175,34 @@ class Musico(SoupBase):
                 log.warning(f"AttributeError: {event}")
         return results
 
+class Ltn(SoupBase):
+    def __init__(self, keyword) -> None:
+        super().__init__(
+            '自由電子報',
+            f'https://search.ltn.com.tw/list?keyword={keyword}&type=all&sort=date')
+        # &start_time=20231203&end_time=20231204
+    async def get_events(self) -> List[Event]:
+        results = []
+        for event in self.soup.find("ul", class_="list boxTitle").find_all("li"):
+            try:
+                title_info = event.find("a")
+                title = title_info["title"]
+                link = title_info["href"]
+                info = event.find("p").text.strip()
+                if "管樂團" in title or "弦樂團" in title or "絃樂團" in title: continue
+                if not ("募集" in title or "徵選" in title or "報名" in title or "開跑" in title) and\
+                        not ("募集" in info or "徵選" in info or "報名" in info or "開跑" in info):
+                    continue
+                postdate = event.find("span", class_="time").string
+                postdate = datetime.datetime.strptime(postdate, "%Y/%m/%d")
+                if postdate < datetime.datetime.now() - relativedelta(days=700): # - relativedelta(months=36):
+                    break
+                img = event.find("img")["src"]
+                results.append(Event(title, postdate, None, self.name, link, info, img))
+            except AttributeError:
+                log.warning(f"AttributeError: {event}")
+        return results
+
 async def find_audition_info():
     events = []
     log.info("Finding audition info...")
@@ -188,6 +216,9 @@ async def find_audition_info():
     events += await Musico("樂團徵選").get_events()
     events += await Musico("原創音樂徵選").get_events()
     events += await Musico("創作徵選").get_events()
+    log.info("From Ltn")
+    events += await Ltn("樂團徵選").get_events()
+    events += await Ltn("音樂徵選").get_events()
     log.info("Done")
     for e in events:
         print(e)
