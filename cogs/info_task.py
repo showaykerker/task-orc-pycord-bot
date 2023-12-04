@@ -149,7 +149,7 @@ class IdeaShow(SoupBase):
         return None, None
     async def get_events(self) -> List[Event]:
         results = []
-        for event in super.get_events(class_="post-inner post-hover"):
+        for event in super().get_events(class_="post-inner post-hover"):
             title_info = event.find("h2", class_="post-title entry-title fittexted_for_post_titles")
             title = title_info.find("a").string
             link = title_info.find("a")["href"]
