@@ -59,8 +59,8 @@ class SoupBase:
         else:
             self.web = requests.get(url)
             self.soup = BeautifulSoup(self.web.text, "html.parser")
-    async def get_events(self) -> List[Event]:
-        pass
+    def get_events(self, class_) -> List[Event]:
+        return self.soup.find_all("div", class_=class_)
     async def get_driver(self, url: str, use_selenium: bool=False):
         if use_selenium:
             driver = webdriver.Chrome(options=self.options)
@@ -76,12 +76,9 @@ class StreetVoiceSoup(SoupBase):
         super().__init__('StreetVoice', 'https://streetvoice.com/opportunities/')
     async def get_events(self) -> List[Event]:
         results = []
-        events = self.soup.find_all("div", class_="border-block oppo-event-item mb-5")
-        for event in events:
-
+        for event in super().get_events("border-block oppo-event-item mb-5"):
             endtime = event.find("h4", class_="text-truncate").string.strip()
             if "結束" in endtime: continue
-
             title_div = event.find("h2", class_="max-two")
             title = title_div.find("a").string
             link = "https://streetvoice.com" + title_div.find("a", href=True)["href"]
@@ -95,7 +92,10 @@ class StreetVoiceSoup(SoupBase):
 
 class BountyHunterSoup(SoupBase):
     def __init__(self) -> None:
-        super().__init__('BountyHunter', 'https://bhuntr.com/tw/competitions?category=119,120,121', True)
+        super().__init__(
+            'BountyHunter',
+            'https://bhuntr.com/tw/competitions?category=119,120,121',
+            True)
 
     async def read_inside(self, url) -> Tuple[Optional[str], Optional[str]]:
         soup = await self.get_driver(url, use_selenium=True)
@@ -110,8 +110,7 @@ class BountyHunterSoup(SoupBase):
 
     async def get_events(self) -> List[Event]:
         results = []
-        events = self.soup.find_all("div", class_="bh-title-block")
-        for event in events:
+        for event in super().get_events(class_="bh-title-block"):
             event_info = event.find("a")
             title = event_info.string
             link = "https://bhuntr.com" + event_info["href"]
@@ -124,7 +123,10 @@ class BountyHunterSoup(SoupBase):
 
 class IdeaShow(SoupBase):
     def __init__(self) -> None:
-        super().__init__('IdeaShow', 'https://news.idea-show.com/tag/樂團徵選/', True)
+        super().__init__(
+            'IdeaShow',
+            'https://news.idea-show.com/tag/樂團徵選/',
+            True)
     async def read_inside(self, url) -> Tuple[Optional[str], Optional[str]]:
         soup = await self.get_driver(url, use_selenium=False)
         endtime = soup.find_all("span", class_="event-date")
@@ -136,8 +138,7 @@ class IdeaShow(SoupBase):
         return None, None
     async def get_events(self) -> List[Event]:
         results = []
-        events = self.soup.find_all("div", class_="post-inner post-hover")
-        for event in events:
+        for event in super.get_events(class_="post-inner post-hover"):
             title_info = event.find("h2", class_="post-title entry-title fittexted_for_post_titles")
             title = title_info.find("a").string
             link = title_info.find("a")["href"]
@@ -153,11 +154,11 @@ class Musico(SoupBase):
     def __init__(self, keyword) -> None:
         super().__init__(
             'Musico',
-            f'https://www.musico.com.tw/all-search/?keyword={keyword}&post-cat%5B%5D=36', False)
+            f'https://www.musico.com.tw/all-search/?keyword={keyword}&post-cat%5B%5D=36',
+            False)
     async def get_events(self) -> List[Event]:
         results = []
-        events = self.soup.find_all("div", class_="post-list-wrap")
-        for event in events:
+        for event in super().get_events("post-list-wrap"):
             try:
                 title_info = event.find("h2", class_="entry-title").find('a')
                 title = title_info.string
@@ -186,6 +187,7 @@ async def find_audition_info():
     log.info("From Musico")
     events += await Musico("樂團徵選").get_events()
     events += await Musico("原創音樂徵選").get_events()
+    events += await Musico("創作徵選").get_events()
     log.info("Done")
     for e in events:
         print(e)
